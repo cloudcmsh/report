@@ -143,7 +143,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
 .action-row { display:flex; gap:8px; margin-bottom:12px; }
 .action-row button { flex:1; font-size:13px; padding:9px; }
 
-/* 使用 flexbox 讓導覽列可以自動適應一個按鈕或兩個按鈕 */
 .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:var(--surface); border-top:1px solid var(--border); display:flex; z-index:50; }
 .nav-item { flex:1; display:flex; flex-direction:column; align-items:center; padding:10px 8px 14px; cursor:pointer; color:var(--text-muted); font-size:11px; font-weight:600; gap:3px; transition:color .12s; user-select:none; }
 .nav-item.active { color:var(--blue); }
@@ -283,7 +282,7 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
 
   <div class="bottom-nav">
     <div class="nav-item active" id="nav-entry" onclick="switchPage('entry')"><span class="nav-icon">✏️</span>登錄</div>
-    <div class="nav-item" id="nav-records" onclick="switchPage('records')"><span class="nav-icon">📄</span>紀錄<span class="badge" id="nav-badge" style="display:none">0</span></div>
+    <div class="nav-item" id="nav-records" onclick="switchPage('records')" style="display:none;"><span class="nav-icon">📄</span>紀錄<span class="badge" id="nav-badge" style="display:none">0</span></div>
   </div>
 </div>
 
@@ -298,10 +297,12 @@ var ni = new Date();
 document.getElementById('date-display').textContent = ni.getFullYear()+'.'+(ni.getMonth()+1)+'.'+ni.getDate()+' ('+WD[ni.getDay()]+')';
 
 // ==========================================
-// 🔐 安全設定區塊
+// 🔐 安全設定與權限變數 (前端)
 // ==========================================
-var ADMIN_PIN = '8888'; // ★ 在這裡設定你的「管理員專屬密碼」
-var isAdmin = false;    // 判斷當前使用者是否為管理員
+var isAdmin = false; 
+var API_URL = '';
+var API_TOKEN = '';
+var API_PWD = ''; 
 // ==========================================
 
 var ENCRYPTED_DATA = 'JGHKepWRaBZbX1hGXhEhzj4wW1ixzBAcCaEZIHlM9NicfJaI+rEI72Mn238oSJ+aaVXHvA9BXbyyHMFisWhlOWZPpKJOe4MLq/R9VOk1XU0GN6+908wtIWtQtlO0Kq1DcAyg+LLD/BnpEondKsx+T9FEG/msyJsl/XK+iMoprtJxacD4IhWCN15mifKAD1ogy4eVvyC9fYdk9Coj';
@@ -337,26 +338,33 @@ async function decryptURL(password) {
   return new TextDecoder().decode(decrypted);
 }
 
-var API_URL = '';
-var API_TOKEN = '';
-
-function saveToken(token, role) {
-  try { localStorage.setItem('cls_token', token); localStorage.setItem('cls_role', role); } catch(e) {}
+function saveToken(pwd, token, role) {
+  try {
+    localStorage.setItem('cls_pwd', pwd);
+    localStorage.setItem('cls_token', token);
+    localStorage.setItem('cls_role', role);
+  } catch(e) {}
+  API_PWD = pwd;
   API_TOKEN = token;
   isAdmin = (role === 'admin');
 }
 
 function clearToken() {
-  try { localStorage.removeItem('cls_token'); localStorage.removeItem('cls_role'); } catch(e) {}
-  API_TOKEN = ''; API_URL = ''; isAdmin = false;
+  try { 
+    localStorage.removeItem('cls_pwd');
+    localStorage.removeItem('cls_token'); 
+    localStorage.removeItem('cls_role'); 
+  } catch(e) {}
+  API_TOKEN = ''; API_URL = ''; API_PWD = ''; isAdmin = false;
 }
 
 function loadSavedToken() {
   try { 
+    API_PWD = localStorage.getItem('cls_pwd') || '';
     API_TOKEN = localStorage.getItem('cls_token') || ''; 
     isAdmin = (localStorage.getItem('cls_role') === 'admin');
   } catch(e) {}
-  return !!API_TOKEN;
+  return !!API_PWD && !!API_TOKEN;
 }
 
 async function unlockApp() {
@@ -365,46 +373,53 @@ async function unlockApp() {
   var admPwd = document.getElementById('setup-admin-token').value.trim();
 
   if (!password || password.length < 4) {
-    showSetupError('⚠️ 請輸入至少 4 個字元的存取密碼');
+    showSetupError('⚠️ 請輸入班級存取密碼');
     return;
   }
-
-  // 若勾選管理員，先驗證密碼是否正確
-  if (isAdmCheck && admPwd !== ADMIN_PIN) {
-    showSetupError('❌ 管理員專屬密碼錯誤');
+  if (isAdmCheck && !admPwd) {
+    showSetupError('⚠️ 請輸入管理員密碼');
     return;
   }
 
   showSetupInfo('⏳ 系統連線驗證中...');
 
   try {
+    // 1. 利用班級密碼解密隱藏的 API 網址
     var url = await decryptURL(password);
-    if (!url.startsWith('https://')) throw new Error('bad');
+    if (!url.startsWith('https://')) throw new Error('bad_decrypt');
     API_URL = url;
-    API_TOKEN = password;
 
-    var data = await apiGet({ action: 'getAll' });
-    if (data.error === 'unauthorized') throw new Error('token');
+    // 2. 決定向後端驗證身分的 Token
+    var backendToken = isAdmCheck ? admPwd : password;
+    API_TOKEN = backendToken;
 
-    saveToken(password, isAdmCheck ? 'admin' : 'user');
+    // 3. 向後端發送 Ping 請求，確保帳號密碼能獲得授權
+    var data = await apiGet({ action: 'ping' });
+    if (data.error === 'unauthorized') {
+      throw new Error('unauthorized');
+    }
+
+    saveToken(password, backendToken, data.role);
     enterApp();
   } catch(e) {
-    if (e.message === 'token') {
-      showSetupError('❌ 存取密碼被伺服器拒絕');
+    if (e.message === 'unauthorized') {
+      showSetupError(isAdmCheck ? '❌ 管理員密碼錯誤' : '❌ 存取密碼遭伺服器拒絕');
     } else {
-      showSetupError('❌ 班級存取密碼錯誤');
+      showSetupError('❌ 班級存取密碼錯誤 (無法連線)');
     }
-    API_URL = ''; API_TOKEN = ''; isAdmin = false;
+    API_URL = ''; API_TOKEN = ''; API_PWD = ''; isAdmin = false;
   }
 }
 
-async function tryAutoUnlock(token) {
+async function tryAutoUnlock() {
   try {
-    var url = await decryptURL(token);
+    var url = await decryptURL(API_PWD);
     if (!url.startsWith('https://')) return false;
     API_URL = url;
-    API_TOKEN = token;
-    return true;
+    
+    // 背景重新驗證一次，避免後端密碼被修改後仍停留在登入狀態
+    var data = await apiGet({ action: 'ping' });
+    return !data.error;
   } catch(e) { return false; }
 }
 
@@ -426,7 +441,6 @@ function enterApp() {
   document.getElementById('main-app').style.display = 'block';
   buildPicker();
   
-  // 依據角色權限顯示不同介面
   if (isAdmin) {
     document.getElementById('nav-records').style.display = 'flex';
     loadRecords();
@@ -667,7 +681,7 @@ function updateBadge(){var b=document.getElementById('nav-badge');if(!b)return;i
 
 (async function init() {
   if (loadSavedToken()) {
-    var ok = await tryAutoUnlock(API_TOKEN);
+    var ok = await tryAutoUnlock();
     if (ok) { enterApp(); return; }
   }
   document.getElementById('setup-screen').style.display = 'flex';
