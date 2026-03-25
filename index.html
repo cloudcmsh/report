@@ -374,11 +374,8 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
 const WD = ['日','一','二','三','四','五','六'];
 (()=>{ const n=new Date(); document.getElementById('date-display').textContent=`${n.getFullYear()}.${n.getMonth()+1}.${n.getDate()} (${WD[n.getDay()]})`; })();
 
-let API_URL = localStorage.getItem('gas_url') || '';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwzSbn-0MQ4RQ0HferrWJOWKwjU43cVA3AGeMF59tZVCRNW0xD0KLMlxmFpzeM1NznA/exec';
 
-function connectAPI() {
-  const url = document.getElementById('api-url-input').value.trim();
-  if (!url.startsWith('https://script.google.com/macros/s/')) { showToast('⚠️ 網址格式不正確'); return; }
   const btn = document.getElementById('connect-btn');
   btn.disabled = true; btn.textContent = '連線測試中...';
   fetch(url + '?action=getAll')
@@ -390,12 +387,6 @@ function connectAPI() {
     .catch(() => { btn.disabled = false; btn.textContent = '連線並開始使用'; showToast('❌ 連線失敗，請確認網址'); });
 }
 
-function resetAPI() {
-  if (!confirm('確定要重設連線網址？')) return;
-  localStorage.removeItem('gas_url'); API_URL = '';
-  document.getElementById('main-app').style.display = 'none';
-  document.getElementById('setup-screen').style.display = 'block';
-}
 
 function initApp() {
   document.getElementById('setup-screen').style.display = 'none';
@@ -403,7 +394,7 @@ function initApp() {
   document.getElementById('settings-url-display').textContent = API_URL;
   buildPicker(); loadRecords();
 }
-if (API_URL) initApp();
+initApp();
 
 function switchPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
