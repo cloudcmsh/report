@@ -44,7 +44,8 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans TC', s
 .field { margin-bottom: 11px; }
 .field label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); letter-spacing: 1px; margin-bottom: 6px; }
 select, input[type="text"], textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 13px; color: var(--text); font-family: 'Noto Sans TC', sans-serif; font-size: 14px; outline: none; appearance: none; -webkit-appearance: none; transition: border-color .15s; }
-select:focus, input[type="text"]:focus, textarea:focus { border-color: var(--blue); }
+input[type="password"] { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 13px; color: var(--text); font-family: 'Space Mono', monospace; font-size: 14px; outline: none; transition: border-color .15s; }
+select:focus, input[type="text"]:focus, input[type="password"]:focus, textarea:focus { border-color: var(--blue); }
 textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
 .select-wrap { position: relative; }
 .select-wrap::after { content:'▾'; position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); pointer-events:none; font-size:11px; }
@@ -95,7 +96,9 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
 .btn:active { transform:scale(.97); opacity:.85; }
 .btn-success { background:var(--green);  color:#0d1117; }
 .btn-orange  { background:var(--orange); color:#fff; }
+.btn-blue    { background:var(--blue);   color:#0d1117; }
 .btn-ghost   { background:transparent; border:1px solid var(--border); color:var(--text-muted); font-size:13px; padding:9px; }
+.btn-danger  { background:var(--red-dim); border:1px solid var(--red); color:var(--red); font-size:13px; padding:9px; }
 
 .sync-bar { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-muted); padding: 10px 0 0; }
 .sync-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
@@ -149,6 +152,18 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
 .settings-label { font-size:14px; }
 .settings-sub { font-size:11px; color:var(--text-muted); margin-top:2px; font-family:'Space Mono',monospace; word-break:break-all; }
 .settings-btn { background:none; border:1px solid var(--border); color:var(--text-muted); font-size:12px; padding:5px 12px; border-radius:6px; cursor:pointer; white-space:nowrap; margin-left:12px; flex-shrink:0; }
+
+/* SETUP PAGE */
+.setup-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:80vh; padding:24px 20px; }
+.setup-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:28px 22px; width:100%; max-width:400px; }
+.setup-icon { font-size:48px; text-align:center; margin-bottom:16px; }
+.setup-title { font-size:18px; font-weight:900; text-align:center; margin-bottom:6px; }
+.setup-desc { font-size:13px; color:var(--text-muted); text-align:center; margin-bottom:24px; line-height:1.6; }
+.setup-field { margin-bottom:16px; }
+.setup-field label { display:block; font-size:12px; font-weight:700; color:var(--text-muted); letter-spacing:1px; margin-bottom:6px; }
+.setup-hint { font-size:11px; color:var(--text-muted); margin-top:5px; line-height:1.5; }
+.setup-error { background:var(--red-dim); border:1px solid rgba(248,81,73,.4); border-radius:8px; padding:10px 14px; font-size:13px; color:var(--red); margin-bottom:16px; display:none; }
+.connected-badge { display:inline-flex; align-items:center; gap:5px; background:var(--green-dim); border:1px solid rgba(63,185,80,.4); color:var(--green); font-size:12px; font-weight:700; padding:3px 10px; border-radius:6px; }
 </style>
 </head>
 <body>
@@ -161,7 +176,29 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
   </div>
 </div>
 
-<div id="main-app">
+<!-- ══════════════ 設定連線畫面 ══════════════ -->
+<div id="setup-screen" class="setup-screen">
+  <div class="setup-card">
+    <div class="setup-icon">🔐</div>
+    <div class="setup-title">連線設定</div>
+    <div class="setup-desc">首次使用請輸入 Apps Script 網址和存取金鑰。<br>設定會儲存在此裝置中。</div>
+    <div class="setup-error" id="setup-error"></div>
+    <div class="setup-field">
+      <label>APPS SCRIPT 網址</label>
+      <input type="text" id="setup-url" placeholder="https://script.google.com/macros/s/..." autocomplete="off" autocapitalize="off">
+      <div class="setup-hint">貼上你部署的 Web App 網址</div>
+    </div>
+    <div class="setup-field">
+      <label>存取金鑰 (TOKEN)</label>
+      <input type="password" id="setup-token" placeholder="輸入你在 GAS 設定的 SECRET_TOKEN" autocomplete="off">
+      <div class="setup-hint">與 Apps Script 端設定的 TOKEN 一致</div>
+    </div>
+    <button class="btn btn-blue" onclick="saveSetup()" style="margin-top:8px">🔗 連線並儲存</button>
+  </div>
+</div>
+
+<!-- ══════════════ 主程式 ══════════════ -->
+<div id="main-app" style="display:none">
   <div class="page active" id="page-entry">
     <div class="card">
       <div class="card-title">📌 選擇任務</div>
@@ -281,9 +318,10 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
       <div class="card-title">🔗 連線設定</div>
       <div class="settings-item">
         <div>
-          <div class="settings-label">Apps Script 網址</div>
+          <div class="settings-label">連線狀態</div>
           <div class="settings-sub" id="settings-url-display">—</div>
         </div>
+        <span class="connected-badge" id="connected-badge">✓ 已連線</span>
       </div>
       <div class="settings-item">
         <div><div class="settings-label">重新整理紀錄</div></div>
@@ -291,9 +329,22 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
       </div>
     </div>
     <div class="card">
+      <div class="card-title">🔑 安全性</div>
+      <div class="settings-item">
+        <div>
+          <div class="settings-label">存取金鑰</div>
+          <div class="settings-sub">已加密儲存於此裝置</div>
+        </div>
+      </div>
+      <div class="settings-item" style="border-bottom:none">
+        <div><div class="settings-label">重新設定連線</div></div>
+        <button class="settings-btn" style="border-color:var(--red);color:var(--red)" onclick="resetSetup()">清除設定</button>
+      </div>
+    </div>
+    <div class="card">
       <div class="card-title">ℹ️ 說明</div>
       <p style="font-size:13px;color:var(--text-muted);line-height:1.7">
-        所有登錄資料即時寫入 Google 試算表，群組內所有人使用同一份 HTML，資料完全共用。切換到「紀錄」頁時會自動重新載入。
+        所有登錄資料即時寫入 Google 試算表，群組內所有人使用同一份 HTML，資料完全共用。API 網址和金鑰僅儲存在您的裝置中，不會出現在原始碼裡。
       </p>
     </div>
   </div>
@@ -311,9 +362,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
 /*
  * ══════════════════════════════════════════════════════
  *  全域錯誤攔截
- *  - 跨域 fetch 失敗時瀏覽器只會給 "Script error."
- *  - 未捕獲的 Promise rejection（fetch 超時等）
- *  - 在此統一攔截，避免 console 紅字
  * ══════════════════════════════════════════════════════
  */
 window.onerror = function() { return true; };
@@ -321,7 +369,7 @@ window.addEventListener('unhandledrejection', function(e) { e.preventDefault(); 
 
 /*
  * ══════════════════════════════════════════════════════
- *  常數
+ *  日期顯示
  * ══════════════════════════════════════════════════════
  */
 var WD = ['日','一','二','三','四','五','六'];
@@ -329,21 +377,119 @@ var now_init = new Date();
 document.getElementById('date-display').textContent =
   now_init.getFullYear() + '.' + (now_init.getMonth()+1) + '.' + now_init.getDate() + ' (' + WD[now_init.getDay()] + ')';
 
-var API_URL = 'https://script.google.com/macros/s/AKfycbwzSbn-0MQ4RQ0HferrWJOWKwjU43cVA3AGeMF59tZVCRNW0xD0KLMlxmFpzeM1NznA/exec';
+/*
+ * ══════════════════════════════════════════════════════
+ *  連線設定管理
+ *  - API_URL 和 TOKEN 不寫在程式碼裡
+ *  - 儲存在 localStorage（每台裝置獨立）
+ *  - 首次開啟會顯示設定畫面
+ * ══════════════════════════════════════════════════════
+ */
+var API_URL = '';
+var API_TOKEN = '';
+
+function loadConfig() {
+  try {
+    API_URL   = localStorage.getItem('cls_api_url')   || '';
+    API_TOKEN = localStorage.getItem('cls_api_token') || '';
+  } catch(e) { /* localStorage 不可用 */ }
+  return API_URL && API_TOKEN;
+}
+
+function saveConfig(url, token) {
+  try {
+    localStorage.setItem('cls_api_url',   url);
+    localStorage.setItem('cls_api_token', token);
+  } catch(e) {}
+  API_URL = url;
+  API_TOKEN = token;
+}
+
+function clearConfig() {
+  try {
+    localStorage.removeItem('cls_api_url');
+    localStorage.removeItem('cls_api_token');
+  } catch(e) {}
+  API_URL = '';
+  API_TOKEN = '';
+}
+
+/* 設定畫面 - 儲存連線 */
+function saveSetup() {
+  var url   = document.getElementById('setup-url').value.trim();
+  var token = document.getElementById('setup-token').value.trim();
+  var errEl = document.getElementById('setup-error');
+
+  if (!url || !url.startsWith('https://script.google.com/')) {
+    errEl.textContent = '⚠️ 請輸入有效的 Apps Script 網址';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (!token || token.length < 6) {
+    errEl.textContent = '⚠️ 金鑰至少需要 6 個字元';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  errEl.style.display = 'none';
+  saveConfig(url, token);
+
+  /* 測試連線 */
+  errEl.textContent = '⏳ 測試連線中...';
+  errEl.style.display = 'block';
+  errEl.style.background = 'var(--blue-dim)';
+  errEl.style.borderColor = 'rgba(88,166,255,.4)';
+  errEl.style.color = 'var(--blue)';
+
+  apiGet({ action: 'getAll' })
+    .then(function(data) {
+      if (data.error === 'unauthorized') {
+        throw new Error('金鑰錯誤');
+      }
+      enterApp();
+    })
+    .catch(function(e) {
+      errEl.style.background = 'var(--red-dim)';
+      errEl.style.borderColor = 'rgba(248,81,73,.4)';
+      errEl.style.color = 'var(--red)';
+      if (e.message === '金鑰錯誤') {
+        errEl.textContent = '❌ 金鑰驗證失敗，請確認 TOKEN 是否正確';
+      } else {
+        errEl.textContent = '❌ 連線失敗，請確認網址是否正確';
+      }
+      clearConfig();
+    });
+}
+
+/* 重新設定 */
+function resetSetup() {
+  if (!confirm('確定要清除連線設定？需要重新輸入網址和金鑰。')) return;
+  clearConfig();
+  document.getElementById('main-app').style.display = 'none';
+  document.getElementById('setup-screen').style.display = 'flex';
+  document.getElementById('setup-url').value = '';
+  document.getElementById('setup-token').value = '';
+  document.getElementById('setup-error').style.display = 'none';
+}
+
+/* 進入主程式 */
+function enterApp() {
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('main-app').style.display = 'block';
+  /* 設定頁只顯示網址的前 40 字，不顯示完整 URL */
+  var masked = API_URL.substring(0, 40) + '...';
+  document.getElementById('settings-url-display').textContent = masked;
+  buildPicker();
+  loadRecords();
+}
 
 /*
  * ══════════════════════════════════════════════════════
- *  API 封裝
- *
- *  Google Apps Script Web App 注意事項：
- *  1. 部署後的 URL 會 302 redirect → 需要 redirect:'follow'
- *  2. POST + Content-Type: application/json → 觸發 CORS preflight (OPTIONS)
- *     但 GAS 不處理 OPTIONS → 直接失敗
- *  3. 解法：用 Content-Type: text/plain 避免 preflight
- *  4. GAS 端 doPost(e) 用 JSON.parse(e.postData.contents) 解析
+ *  API 封裝（帶 TOKEN）
  * ══════════════════════════════════════════════════════
  */
 function apiGet(params) {
+  params.token = API_TOKEN;
   var url = API_URL + '?' + new URLSearchParams(params).toString();
   return fetch(url, { redirect: 'follow' })
     .then(function(res) { return res.text(); })
@@ -351,6 +497,7 @@ function apiGet(params) {
 }
 
 function apiPost(payload) {
+  payload.token = API_TOKEN;
   return fetch(API_URL, {
     method: 'POST',
     redirect: 'follow',
@@ -419,11 +566,6 @@ function selectTask(task) {
   if (task === 'listen') { listenStatus = ''; resetListenUI(); }
 }
 
-/*
- * ══════════════════════════════════════════════════════
- *  班級選擇
- * ══════════════════════════════════════════════════════
- */
 function updateClassOpts() {
   var s = document.getElementById('sel-school').value;
   var sel = document.getElementById('sel-class');
@@ -499,9 +641,7 @@ function syncPickerUI() {
 function toggleAllPresent() {
   allPresent = !allPresent;
   if (allPresent) {
-    currentSeats.clear();
-    syncPickerUI();
-    renderSummary();
+    currentSeats.clear(); syncPickerUI(); renderSummary();
     document.getElementById('all-present-notice').style.display = 'block';
     document.getElementById('present-btn').classList.add('active');
     showToast('全班到齊，可直接提交');
@@ -525,9 +665,7 @@ function manualAdd() {
         var picker = document.getElementById('seat-picker');
         if (!picker.querySelector('[data-seat="' + n + '"]')) {
           var b = document.createElement('button');
-          b.className = 'seat-btn selected';
-          b.textContent = n;
-          b.dataset.seat = n;
+          b.className = 'seat-btn selected'; b.textContent = n; b.dataset.seat = n;
           b.onclick = (function(num) { return function() { toggleSeat(num); }; })(n);
           picker.appendChild(b);
         }
@@ -536,8 +674,7 @@ function manualAdd() {
     }
   });
   document.getElementById('seat-input').value = '';
-  syncPickerUI();
-  renderSummary();
+  syncPickerUI(); renderSummary();
   showToast(added ? '✅ 已加入 ' + added + ' 個座號' : '⚠️ 未新增（重複或格式錯誤）');
 }
 
@@ -559,15 +696,11 @@ function renderSummary() {
 function removeSeat(n) { currentSeats.delete(n); syncPickerUI(); renderSummary(); }
 
 function clearSeats() {
-  currentSeats.clear();
-  allPresent = false;
+  currentSeats.clear(); allPresent = false;
   document.getElementById('all-present-notice').style.display = 'none';
   document.getElementById('present-btn').classList.remove('active');
-  document.querySelectorAll('.seat-btn').forEach(function(b) {
-    if (parseInt(b.dataset.seat) > MAX_SEAT) b.remove();
-  });
-  syncPickerUI();
-  renderSummary();
+  document.querySelectorAll('.seat-btn').forEach(function(b) { if (parseInt(b.dataset.seat) > MAX_SEAT) b.remove(); });
+  syncPickerUI(); renderSummary();
   showToast('已清除所有座號');
 }
 
@@ -604,6 +737,7 @@ function submitRecord() {
   setSyncState('entry', 'loading', '儲存中...');
   apiPost({ action: 'add', record: rec })
     .then(function(data) {
+      if (data.error === 'unauthorized') throw new Error('unauthorized');
       if (!data.ok) throw new Error('not ok');
       setSyncState('entry', 'ok', '已同步到試算表');
       showToast('🎉 ' + rec.className + ' 登錄完成！');
@@ -611,9 +745,14 @@ function submitRecord() {
       if (currentTask === 'listen')  { listenStatus = ''; resetListenUI(); }
       return loadRecords();
     })
-    .catch(function() {
-      setSyncState('entry', 'error', '儲存失敗，請重試');
-      showToast('❌ 儲存失敗，請確認連線');
+    .catch(function(e) {
+      if (e.message === 'unauthorized') {
+        setSyncState('entry', 'error', '金鑰驗證失敗');
+        showToast('❌ 金鑰錯誤，請到設定頁重新設定');
+      } else {
+        setSyncState('entry', 'error', '儲存失敗，請重試');
+        showToast('❌ 儲存失敗，請確認連線');
+      }
     });
 }
 
@@ -629,13 +768,17 @@ function loadRecords() {
   setSyncState('rec', 'loading', '載入中...');
   return apiGet({ action: 'getAll' })
     .then(function(data) {
+      if (data.error === 'unauthorized') throw new Error('unauthorized');
       records = data.records || [];
-      renderRecords();
-      updateBadge();
+      renderRecords(); updateBadge();
       setSyncState('rec', 'ok', '已更新，共 ' + records.length + ' 筆');
     })
-    .catch(function() {
-      setSyncState('rec', 'error', '載入失敗');
+    .catch(function(e) {
+      if (e.message === 'unauthorized') {
+        setSyncState('rec', 'error', '金鑰驗證失敗');
+      } else {
+        setSyncState('rec', 'error', '載入失敗');
+      }
     });
 }
 
@@ -653,10 +796,7 @@ function renderRecords() {
   document.getElementById('stat-absence').textContent = records.filter(function(r) { return r.taskType === 'absence'; }).length;
   var list = currentFilter === 'all' ? records : records.filter(function(r) { return r.taskType === currentFilter; });
   var container = document.getElementById('records-container');
-  if (!list.length) {
-    container.innerHTML = '<p class="empty-hint" style="text-align:center;padding:32px 0">尚無紀錄</p>';
-    return;
-  }
+  if (!list.length) { container.innerHTML = '<p class="empty-hint" style="text-align:center;padding:32px 0">尚無紀錄</p>'; return; }
   container.innerHTML = list.map(function(r) {
     var isL = r.taskType === 'listen';
     var tag = '<span class="rec-tag ' + (isL ? 'tl' : 'ta') + '">' + (isL ? '英聽' : '缺考') + '</span>';
@@ -736,12 +876,9 @@ function copyText(t) {
     navigator.clipboard.writeText(t).then(function() { showToast('✅ 已複製到剪貼簿'); }).catch(function() {});
   } else {
     var ta = document.createElement('textarea');
-    ta.value = t;
-    ta.style.cssText = 'position:fixed;opacity:0';
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
+    ta.value = t; ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
     showToast('✅ 已複製到剪貼簿');
   }
 }
@@ -759,10 +896,11 @@ function updateBadge() {
  *  啟動
  * ══════════════════════════════════════════════════════
  */
-document.getElementById('main-app').style.display = 'block';
-document.getElementById('settings-url-display').textContent = API_URL;
-buildPicker();
-loadRecords();
+if (loadConfig()) {
+  enterApp();
+} else {
+  document.getElementById('setup-screen').style.display = 'flex';
+}
 </script>
 </body>
 </html>
