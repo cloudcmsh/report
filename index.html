@@ -110,11 +110,17 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
 .stat-pill { background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:10px; text-align:center; }
 .stat-num { font-family:'Space Mono',monospace; font-size:20px; font-weight:700; }
 .stat-label { font-size:10px; color:var(--text-muted); margin-top:3px; letter-spacing:1px; }
-.filter-row { display:flex; gap:8px; margin-bottom:12px; }
+
+.filter-row { display:flex; gap:8px; margin-bottom:8px; }
 .filter-btn { flex:1; padding:8px; border:1px solid var(--border); border-radius:8px; background:var(--surface2); color:var(--text-muted); font-size:13px; font-weight:600; cursor:pointer; transition:all .12s; }
 .filter-btn.fa { border-color:var(--blue);   color:var(--blue);   background:var(--blue-dim); }
 .filter-btn.fl { border-color:var(--orange); color:var(--orange); background:var(--orange-dim); }
 .filter-btn.fx { border-color:var(--red);    color:var(--red);    background:var(--red-dim); }
+
+/* 新增的進階篩選列樣式 */
+.sub-filter-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:12px; }
+.sub-filter-row select { padding: 8px 10px; font-size: 13px; font-weight: 600; color: var(--text-muted); background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; }
+
 .record-item { background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:13px; margin-bottom:9px; }
 .rec-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:7px; }
 .rec-class { font-size:15px; font-weight:900; letter-spacing:1px; }
@@ -174,7 +180,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
   </div>
 </div>
 
-<!-- ══════════════ 解鎖畫面（只需輸入密碼） ══════════════ -->
 <div id="setup-screen" class="setup-screen">
   <div class="setup-card">
     <div class="setup-icon">🔐</div>
@@ -189,7 +194,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
   </div>
 </div>
 
-<!-- ══════════════ 主程式 ══════════════ -->
 <div id="main-app" style="display:none">
   <div class="page active" id="page-entry">
     <div class="card">
@@ -228,8 +232,41 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
 
   <div class="page" id="page-records">
     <div class="stat-row"><div class="stat-pill"><div class="stat-num" id="stat-total">0</div><div class="stat-label">總筆數</div></div><div class="stat-pill"><div class="stat-num" id="stat-listen">0</div><div class="stat-label">英聽回報</div></div><div class="stat-pill"><div class="stat-num" id="stat-absence">0</div><div class="stat-label">缺考班數</div></div></div>
-    <div class="filter-row"><button class="filter-btn fa" id="filter-all" onclick="setFilter('all')">全部</button><button class="filter-btn" id="filter-listen" onclick="setFilter('listen')">英聽</button><button class="filter-btn" id="filter-absence" onclick="setFilter('absence')">缺考</button></div>
-    <div class="action-row"><button class="btn btn-ghost" onclick="copyAll()">📋 複製全部</button><button class="btn btn-ghost" onclick="clearAllRecords()">🗑 清除全部</button></div>
+    
+    <div class="filter-row">
+      <button class="filter-btn fa" id="filter-all" onclick="setFilter('all')">全部</button>
+      <button class="filter-btn" id="filter-listen" onclick="setFilter('listen')">英聽</button>
+      <button class="filter-btn" id="filter-absence" onclick="setFilter('absence')">缺考</button>
+    </div>
+
+    <div class="sub-filter-row">
+      <div class="select-wrap">
+        <select id="filter-date" onchange="setSubFilter('date', this.value)">
+          <option value="all">全部日期</option>
+        </select>
+      </div>
+      <div class="select-wrap">
+        <select id="filter-school" onchange="setSubFilter('school', this.value)">
+          <option value="all">全部年段</option>
+          <option value="高中部">高中部</option>
+          <option value="國中部">國中部</option>
+        </select>
+      </div>
+      <div class="select-wrap">
+        <select id="filter-grade" onchange="setSubFilter('grade', this.value)">
+          <option value="all">全部年級</option>
+          <option value="一">一年級</option>
+          <option value="二">二年級</option>
+          <option value="三">三年級</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn btn-ghost" onclick="copyAll()">📋 複製全部</button>
+      <button class="btn btn-ghost" onclick="clearAllRecords()">🗑 清除全部</button>
+    </div>
+    
     <div id="records-container"><p class="empty-hint" style="text-align:center;padding:32px 0">尚無紀錄</p></div>
     <div class="sync-bar"><span class="sync-dot ok" id="sync-dot-rec"></span><span id="sync-label-rec">就緒</span></div>
   </div>
@@ -265,15 +302,6 @@ var WD = ['日','一','二','三','四','五','六'];
 var ni = new Date();
 document.getElementById('date-display').textContent = ni.getFullYear()+'.'+(ni.getMonth()+1)+'.'+ni.getDate()+' ('+WD[ni.getDay()]+')';
 
-/*
- * ══════════════════════════════════════════════════════
- *  AES-256-GCM 加密/解密（Web Crypto API）
- *
- *  加密後的 URL 以 Base64 嵌入在程式碼中，
- *  格式：salt(16) + iv(12) + tag(16) + ciphertext
- *  使用 PBKDF2 從密碼衍生金鑰
- * ══════════════════════════════════════════════════════
- */
 var ENCRYPTED_DATA = 'JGHKepWRaBZbX1hGXhEhzj4wW1ixzBAcCaEZIHlM9NicfJaI+rEI72Mn238oSJ+aaVXHvA9BXbyyHMFisWhlOWZPpKJOe4MLq/R9VOk1XU0GN6+908wtIWtQtlO0Kq1DcAyg+LLD/BnpEondKsx+T9FEG/msyJsl/XK+iMoprtJxacD4IhWCN15mifKAD1ogy4eVvyC9fYdk9Coj';
 
 function b64ToUint8(b64) {
@@ -307,11 +335,6 @@ async function decryptURL(password) {
   return new TextDecoder().decode(decrypted);
 }
 
-/*
- * ══════════════════════════════════════════════════════
- *  狀態管理
- * ══════════════════════════════════════════════════════
- */
 var API_URL = '';
 var API_TOKEN = '';
 
@@ -331,11 +354,6 @@ function clearToken() {
   API_URL = '';
 }
 
-/*
- * ══════════════════════════════════════════════════════
- *  解鎖流程
- * ══════════════════════════════════════════════════════
- */
 async function unlockApp() {
   var password = document.getElementById('setup-token').value.trim();
   var errEl = document.getElementById('setup-error');
@@ -406,11 +424,6 @@ function showSetupInfo(msg) {
   el.style.background = 'var(--blue-dim)'; el.style.borderColor = 'rgba(88,166,255,.4)'; el.style.color = 'var(--blue)';
 }
 
-/*
- * ══════════════════════════════════════════════════════
- *  API 封裝
- * ══════════════════════════════════════════════════════
- */
 function apiGet(params) {
   params.token = API_TOKEN;
   var url = API_URL + '?' + new URLSearchParams(params).toString();
@@ -421,11 +434,6 @@ function apiPost(payload) {
   return fetch(API_URL, { method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(payload) }).then(function(r){return r.text()}).then(function(t){return JSON.parse(t)});
 }
 
-/*
- * ══════════════════════════════════════════════════════
- *  工具
- * ══════════════════════════════════════════════════════
- */
 function escapeHtml(s){if(!s)return '';var d=document.createElement('div');d.textContent=s;return d.innerHTML}
 var toastTimer;
 function showToast(m){var e=document.getElementById('toast');if(!e)return;e.textContent=m;e.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){e.classList.remove('show')},2400)}
@@ -455,24 +463,125 @@ function clearSeats(){currentSeats.clear();allPresent=false;document.getElementB
 
 function submitRecord(){var school=document.getElementById('sel-school').value;var g=document.getElementById('sel-grade').value;var c=document.getElementById('sel-class').value;if(!currentTask){showToast('⚠️ 請先選擇任務');return}if(!school||!g||!c){showToast('⚠️ 請選擇年段、年級和班級');return}if(currentTask==='listen'){if(!listenStatus){showToast('⚠️ 請選擇正常或異常');return}if(listenStatus==='abnormal'&&!document.getElementById('listen-note').value.trim()){showToast('⚠️ 請填寫異常說明');return}}if(currentTask==='absence'&&!allPresent&&currentSeats.size===0){showToast('⚠️ 請選擇座號，或點「全班到齊」');return}var now=new Date();var rec={id:Date.now(),taskType:currentTask,className:school+g+'年'+c+'班',seats:currentTask==='absence'?Array.from(currentSeats).sort(function(a,b){return a-b}):[],allPresent:currentTask==='absence'?allPresent:false,listenStatus:currentTask==='listen'?listenStatus:'',listenNote:currentTask==='listen'?document.getElementById('listen-note').value.trim():'',date:(now.getMonth()+1)+'/'+now.getDate(),time:String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0')};setSyncState('entry','loading','儲存中...');apiPost({action:'add',record:rec}).then(function(data){if(data.error==='unauthorized')throw new Error('unauthorized');if(!data.ok)throw new Error('not ok');setSyncState('entry','ok','已同步到試算表');showToast('🎉 '+rec.className+' 登錄完成！');if(currentTask==='absence')clearSeats();if(currentTask==='listen'){listenStatus='';resetListenUI()}return loadRecords()}).catch(function(e){if(e.message==='unauthorized'){setSyncState('entry','error','金鑰驗證失敗');showToast('❌ 金鑰錯誤')}else{setSyncState('entry','error','儲存失敗');showToast('❌ 儲存失敗，請確認連線')}})}
 
-var records=[],currentFilter='all';
-function loadRecords(){setSyncState('rec','loading','載入中...');return apiGet({action:'getAll'}).then(function(data){if(data.error==='unauthorized')throw new Error('unauthorized');records=data.records||[];renderRecords();updateBadge();setSyncState('rec','ok','已更新，共 '+records.length+' 筆')}).catch(function(e){if(e.message==='unauthorized')setSyncState('rec','error','金鑰驗證失敗');else setSyncState('rec','error','載入失敗')})}
-function setFilter(f){currentFilter=f;document.querySelectorAll('.filter-btn').forEach(function(b){b.className='filter-btn'});var cls={all:'fa',listen:'fl',absence:'fx'};document.getElementById('filter-'+f).classList.add(cls[f]);renderRecords()}
+var records=[], currentFilter='all', filterDate='all', filterSchool='all', filterGrade='all';
 
-function renderRecords(){document.getElementById('stat-total').textContent=records.length;document.getElementById('stat-listen').textContent=records.filter(function(r){return r.taskType==='listen'}).length;document.getElementById('stat-absence').textContent=records.filter(function(r){return r.taskType==='absence'}).length;var list=currentFilter==='all'?records:records.filter(function(r){return r.taskType===currentFilter});var ct=document.getElementById('records-container');if(!list.length){ct.innerHTML='<p class="empty-hint" style="text-align:center;padding:32px 0">尚無紀錄</p>';return}ct.innerHTML=list.map(function(r){var isL=r.taskType==='listen';var tag='<span class="rec-tag '+(isL?'tl':'ta')+'">'+(isL?'英聽':'缺考')+'</span>';var body='';if(isL){body=r.listenStatus==='normal'?'<div class="listen-ok">✓ 設備正常</div>':'<div class="listen-err">✗ 設備異常</div>'+(r.listenNote?'<div class="listen-note-text">'+escapeHtml(r.listenNote)+'</div>':'')}else{body='<div class="rec-seats">'+(r.seats.length===0?'<span style="color:var(--green);font-size:13px;font-weight:700">✓ 全班到齊</span>':r.seats.map(function(s){return '<span class="mini-chip">'+String(s).padStart(2,'0')+'</span>'}).join(''))+'</div>'}var count=isL?(r.listenStatus==='normal'?'設備正常':'設備異常'):(r.seats.length===0?'無人缺考':'缺考 '+r.seats.length+' 人');return '<div class="record-item"><div class="rec-header"><span class="rec-class">'+tag+escapeHtml(r.className)+'</span><span class="rec-time">'+escapeHtml(r.date+' '+r.time)+'</span></div><div class="rec-body">'+body+'</div><div class="rec-footer"><span class="rec-count">'+count+'</span><div class="rec-btns"><button class="rec-btn copy" onclick="copyRecord('+r.id+')">複製</button><button class="rec-btn del" onclick="deleteRecord('+r.id+')">刪除</button></div></div></div>'}).join('')}
+// 解析獨特日期以填充下拉選單
+function updateDateOptions() {
+    var dateSet = new Set();
+    records.forEach(function(r) { if(r.date) dateSet.add(r.date); });
+    var sortedDates = Array.from(dateSet).sort().reverse(); 
+    var sel = document.getElementById('filter-date');
+    var html = '<option value="all">全部日期</option>';
+    sortedDates.forEach(function(d) {
+        var display = d;
+        // 處理 ISO 時間格式顯示（例如 2026-03-24T... 轉成日期）
+        if(d.indexOf('T') > -1) {
+            var pd = new Date(d);
+            if(!isNaN(pd)) display = (pd.getMonth()+1) + '/' + pd.getDate();
+        }
+        html += '<option value="' + d + '">' + escapeHtml(display) + '</option>';
+    });
+    var currentVal = filterDate;
+    sel.innerHTML = html;
+    if(dateSet.has(currentVal)) { sel.value = currentVal; } 
+    else { filterDate = 'all'; }
+}
+
+function loadRecords(){
+  setSyncState('rec','loading','載入中...');
+  return apiGet({action:'getAll'}).then(function(data){
+    if(data.error==='unauthorized')throw new Error('unauthorized');
+    records=data.records||[];
+    updateDateOptions();
+    renderRecords();
+    updateBadge();
+    setSyncState('rec','ok','已更新，共 '+records.length+' 筆');
+  }).catch(function(e){
+    if(e.message==='unauthorized')setSyncState('rec','error','金鑰驗證失敗');
+    else setSyncState('rec','error','載入失敗');
+  })
+}
+
+function setFilter(f){
+  currentFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(function(b){b.className='filter-btn'});
+  var cls={all:'fa',listen:'fl',absence:'fx'};
+  document.getElementById('filter-'+f).classList.add(cls[f]);
+  renderRecords();
+}
+
+function setSubFilter(type, val) {
+  if (type === 'date') filterDate = val;
+  if (type === 'school') filterSchool = val;
+  if (type === 'grade') filterGrade = val;
+  renderRecords();
+}
+
+// 取得多重條件交集篩選後的結果
+function getFilteredRecords() {
+  return records.filter(function(r) {
+    if (currentFilter !== 'all' && r.taskType !== currentFilter) return false;
+    if (filterDate !== 'all' && r.date !== filterDate) return false;
+    if (filterSchool !== 'all' && !r.className.startsWith(filterSchool)) return false;
+    if (filterGrade !== 'all' && r.className.indexOf(filterGrade + '年') === -1) return false;
+    return true;
+  });
+}
+
+function renderRecords(){
+  var list = getFilteredRecords();
+  
+  // 統計資訊更新為「目前篩選出來的」資料筆數
+  document.getElementById('stat-total').textContent = list.length;
+  document.getElementById('stat-listen').textContent = list.filter(function(r){return r.taskType==='listen'}).length;
+  document.getElementById('stat-absence').textContent = list.filter(function(r){return r.taskType==='absence'}).length;
+  
+  var ct=document.getElementById('records-container');
+  if(!list.length){
+    ct.innerHTML='<p class="empty-hint" style="text-align:center;padding:32px 0">無符合篩選的紀錄</p>';
+    return;
+  }
+  
+  ct.innerHTML = list.map(function(r){
+    var isL=r.taskType==='listen';
+    var tag='<span class="rec-tag '+(isL?'tl':'ta')+'">'+(isL?'英聽':'缺考')+'</span>';
+    var body='';
+    if(isL){
+      body=r.listenStatus==='normal'?'<div class="listen-ok">✓ 設備正常</div>':'<div class="listen-err">✗ 設備異常</div>'+(r.listenNote?'<div class="listen-note-text">'+escapeHtml(r.listenNote)+'</div>':'')
+    } else {
+      body='<div class="rec-seats">'+(r.seats.length===0?'<span style="color:var(--green);font-size:13px;font-weight:700">✓ 全班到齊</span>':r.seats.map(function(s){return '<span class="mini-chip">'+String(s).padStart(2,'0')+'</span>'}).join(''))+'</div>'
+    }
+    var count=isL?(r.listenStatus==='normal'?'設備正常':'設備異常'):(r.seats.length===0?'無人缺考':'缺考 '+r.seats.length+' 人');
+    return '<div class="record-item"><div class="rec-header"><span class="rec-class">'+tag+escapeHtml(r.className)+'</span><span class="rec-time">'+escapeHtml(r.date+' '+r.time)+'</span></div><div class="rec-body">'+body+'</div><div class="rec-footer"><span class="rec-count">'+count+'</span><div class="rec-btns"><button class="rec-btn copy" onclick="copyRecord('+r.id+')">複製</button><button class="rec-btn del" onclick="deleteRecord('+r.id+')">刪除</button></div></div></div>'
+  }).join('')
+}
 
 function deleteRecord(id){setSyncState('rec','loading','刪除中...');apiPost({action:'delete',id:id}).then(function(){showToast('已刪除');return loadRecords()}).catch(function(){showToast('❌ 刪除失敗')})}
-function clearAllRecords(){if(!records.length){showToast('沒有紀錄可清除');return}if(!confirm('確定要清除全部 '+records.length+' 筆紀錄？'))return;setSyncState('rec','loading','清除中...');apiPost({action:'clear'}).then(function(){showToast('已清除全部紀錄');return loadRecords()}).catch(function(){showToast('❌ 清除失敗')})}
+
+function clearAllRecords(){
+  if(!records.length){showToast('沒有紀錄可清除');return}
+  if(!confirm('確定要清除全部 '+records.length+' 筆紀錄？\n⚠️ 注意：此操作會清除雲端所有紀錄，無視當前的篩選狀態！'))return;
+  setSyncState('rec','loading','清除中...');
+  apiPost({action:'clear'}).then(function(){showToast('已清除全部紀錄');return loadRecords()}).catch(function(){showToast('❌ 清除失敗')})
+}
+
 function copyRecord(id){var r=records.find(function(x){return x.id==id});if(!r)return;var t='【'+(r.taskType==='listen'?'英聽測試':'缺考登錄')+'】\n班級：'+r.className+'\n';if(r.taskType==='listen'){t+='設備狀態：'+(r.listenStatus==='normal'?'正常':'異常');if(r.listenNote)t+='\n異常說明：'+r.listenNote}else{var s=r.seats.length===0?'無（全班到齊）':r.seats.map(function(s){return String(s).padStart(2,'0')}).join('、');t+='缺考座號：'+s+'\n缺考人數：'+r.seats.length+' 人'}copyText(t+'\n時間：'+r.date+' '+r.time)}
-function copyAll(){if(!records.length){showToast('沒有紀錄可複製');return}var d=(new Date().getMonth()+1)+'/'+new Date().getDate();var lines=['📋 登錄紀錄彙整（'+d+'）\n'+'─'.repeat(18)];records.forEach(function(r,i){var detail=r.taskType==='listen'?(r.listenStatus==='normal'?'設備正常':'設備異常：'+(r.listenNote||'（無說明）')):(r.seats.length===0?'全班到齊（無人缺考）':'缺考：'+r.seats.map(function(s){return String(s).padStart(2,'0')}).join('、')+'（共'+r.seats.length+'人）');lines.push((i+1)+'. ['+(r.taskType==='listen'?'英聽':'缺考')+'] '+r.className+'\n   '+detail)});copyText(lines.join('\n'))}
+
+function copyAll(){
+  var list = getFilteredRecords(); // 僅複製當前篩選出的結果
+  if(!list.length){showToast('沒有紀錄可複製');return}
+  var d=(new Date().getMonth()+1)+'/'+new Date().getDate();
+  var lines=['📋 登錄紀錄彙整（'+d+'）\n'+'─'.repeat(18)];
+  list.forEach(function(r,i){
+    var detail=r.taskType==='listen'?(r.listenStatus==='normal'?'設備正常':'設備異常：'+(r.listenNote||'（無說明）')):(r.seats.length===0?'全班到齊（無人缺考）':'缺考：'+r.seats.map(function(s){return String(s).padStart(2,'0')}).join('、')+'（共'+r.seats.length+'人）');
+    lines.push((i+1)+'. ['+(r.taskType==='listen'?'英聽':'缺考')+'] '+r.className+'\n   '+detail)
+  });
+  copyText(lines.join('\n'))
+}
+
 function copyText(t){if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){showToast('✅ 已複製到剪貼簿')}).catch(function(){})}else{var ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('✅ 已複製到剪貼簿')}}
 function updateBadge(){var b=document.getElementById('nav-badge');if(!b)return;if(!records.length){b.style.display='none';return}b.style.display='inline-flex';b.textContent=records.length}
 
-/*
- * ══════════════════════════════════════════════════════
- *  啟動
- * ══════════════════════════════════════════════════════
- */
 (async function init() {
   if (loadSavedToken()) {
     var ok = await tryAutoUnlock(API_TOKEN);
