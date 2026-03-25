@@ -35,30 +35,10 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans TC', s
 .topbar-text h1 { font-size: 16px; font-weight: 900; letter-spacing: 1px; }
 .topbar-text p  { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
 
-/* SETUP */
-.setup-screen { padding: 32px 20px; max-width: 480px; margin: 0 auto; }
-.setup-screen h2 { font-size: 18px; font-weight: 900; margin-bottom: 8px; }
-.setup-screen > p { font-size: 13px; color: var(--text-muted); line-height: 1.7; margin-bottom: 20px; }
-.setup-steps { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 20px; }
-.step { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; line-height: 1.6; color: var(--text-muted); }
-.step:last-child { border-bottom: none; padding-bottom: 0; }
-.step-num { background: var(--blue-dim); border: 1px solid var(--blue); color: var(--blue); font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
-.step strong { color: var(--text); }
-.url-field { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; }
-.url-field label { display: block; font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 8px; }
-.url-field .hint { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
-.url-field input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; color: var(--text); font-family: 'Space Mono', monospace; font-size: 12px; outline: none; }
-.url-field input:focus { border-color: var(--blue); }
-.btn-connect { width: 100%; background: var(--blue); color: #fff; border: none; padding: 13px; border-radius: 9px; font-family: 'Noto Sans TC', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity .15s; }
-.btn-connect:hover { opacity: .85; }
-.btn-connect:disabled { opacity: .4; cursor: not-allowed; }
-
-/* PAGES */
 .page { display: none; padding: 18px 16px 90px; animation: fadeUp .22s ease; }
 .page.active { display: block; }
 @keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
 
-/* CARDS */
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
 .card-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; }
 .field { margin-bottom: 11px; }
@@ -69,7 +49,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
 .select-wrap { position: relative; }
 .select-wrap::after { content:'▾'; position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); pointer-events:none; font-size:11px; }
 
-/* TASK SELECTOR */
 .task-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .task-card { background: var(--surface2); border: 1.5px solid var(--border); border-radius: 10px; padding: 18px 12px; cursor: pointer; text-align: center; transition: all .15s; user-select: none; }
 .task-card:active { transform: scale(.96); }
@@ -83,7 +62,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
 .task-card.sel-absence .task-name { color: var(--red); }
 .task-card.sel-absence .task-sub  { color: var(--red); opacity: .7; }
 
-/* LISTEN STATUS */
 .listen-status-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
 .status-btn { padding: 14px 8px; border-radius: 9px; border: 1.5px solid var(--border); background: var(--surface2); color: var(--text-muted); font-family: 'Noto Sans TC', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; text-align: center; transition: all .15s; user-select: none; }
 .status-btn:active { transform: scale(.96); }
@@ -92,7 +70,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
 .note-wrap { display: none; }
 .note-wrap.show { display: block; }
 
-/* SEAT PICKER */
 .picker-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
 .picker-header span { font-size:11px; font-weight:700; letter-spacing:2px; color:var(--text-muted); text-transform:uppercase; }
 .present-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--text-muted); font-size:12px; padding:5px 12px; border-radius:6px; cursor:pointer; font-family:'Noto Sans TC',sans-serif; transition: all .15s; }
@@ -107,7 +84,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
 .manual-add-btn:active { opacity:.75; transform:scale(.96); }
 .all-present-notice { background: var(--green-dim); border: 1px solid rgba(63,185,80,.4); border-radius: 8px; padding: 10px 14px; font-size: 13px; color: var(--green); margin-bottom: 12px; display: none; }
 
-/* CHIPS */
 .seat-summary { display:flex; flex-wrap:wrap; gap:6px; padding:2px 0; }
 .seat-chip { background:var(--red-dim); border:1.5px solid var(--red); color:var(--red); font-family:'Space Mono',monospace; font-size:12px; font-weight:700; padding:4px 9px; border-radius:6px; display:flex; align-items:center; gap:5px; animation: pop .16s ease; }
 @keyframes pop { from{transform:scale(.6);opacity:0} to{transform:scale(1);opacity:1} }
@@ -115,14 +91,12 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
 .chip-del:hover { opacity:1; }
 .empty-hint { color:var(--text-muted); font-size:13px; font-style:italic; padding:6px 0; }
 
-/* BUTTONS */
 .btn { display:block; width:100%; padding:12px; border:none; border-radius:9px; font-family:'Noto Sans TC',sans-serif; font-size:14px; font-weight:700; cursor:pointer; letter-spacing:1px; transition:opacity .15s, transform .1s; }
 .btn:active { transform:scale(.97); opacity:.85; }
 .btn-success { background:var(--green);  color:#0d1117; }
 .btn-orange  { background:var(--orange); color:#fff; }
 .btn-ghost   { background:transparent; border:1px solid var(--border); color:var(--text-muted); font-size:13px; padding:9px; }
 
-/* SYNC */
 .sync-bar { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-muted); padding: 10px 0 0; }
 .sync-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
 .sync-dot.ok      { background: var(--green); }
@@ -130,7 +104,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
 .sync-dot.error   { background: var(--red); }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
 
-/* RECORDS */
 .stat-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:12px; }
 .stat-pill { background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:10px; text-align:center; }
 .stat-num { font-family:'Space Mono',monospace; font-size:20px; font-weight:700; }
@@ -162,7 +135,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
 .action-row { display:flex; gap:8px; margin-bottom:12px; }
 .action-row button { flex:1; font-size:13px; padding:9px; }
 
-/* NAV */
 .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:var(--surface); border-top:1px solid var(--border); display:grid; grid-template-columns:1fr 1fr 1fr; z-index:50; }
 .nav-item { display:flex; flex-direction:column; align-items:center; padding:10px 8px 14px; cursor:pointer; color:var(--text-muted); font-size:11px; font-weight:600; gap:3px; transition:color .12s; user-select:none; }
 .nav-item.active { color:var(--blue); }
@@ -189,31 +161,8 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
   </div>
 </div>
 
-<!-- SETUP -->
-<div id="setup-screen" class="setup-screen">
-  <h2>初次設定</h2>
-  <p>請先完成以下步驟，建立共用的 Google 試算表後端。設定只需做一次。</p>
-  <div class="setup-steps">
-    <div class="step"><div class="step-num">1</div><div>前往 <strong>Google 試算表</strong>，建立一個新的空白試算表</div></div>
-    <div class="step"><div class="step-num">2</div><div>點上方選單 <strong>擴充功能 → Apps Script</strong></div></div>
-    <div class="step"><div class="step-num">3</div><div>刪除原有程式碼，貼上 <strong>Code.gs</strong> 的內容，儲存</div></div>
-    <div class="step"><div class="step-num">4</div><div>點 <strong>部署 → 新增部署作業</strong>，類型選「網頁應用程式」，執行身分選「我」，存取權選「所有人」，按「部署」</div></div>
-    <div class="step"><div class="step-num">5</div><div>複製「<strong>網頁應用程式網址</strong>」貼到下方</div></div>
-  </div>
-  <div class="url-field">
-    <label>APPS SCRIPT 網址</label>
-    <input type="text" id="api-url-input" placeholder="https://script.google.com/macros/s/...">
-    <div class="hint">貼上部署後取得的網頁應用程式網址</div>
-  </div>
-  <button class="btn-connect" id="connect-btn" onclick="connectAPI()">連線並開始使用</button>
-</div>
-
-<!-- MAIN APP -->
-<div id="main-app" style="display:none">
-
-  <!-- 登錄頁 -->
+<div id="main-app">
   <div class="page active" id="page-entry">
-
     <div class="card">
       <div class="card-title">📌 選擇任務</div>
       <div class="task-grid">
@@ -229,7 +178,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
         </div>
       </div>
     </div>
-
     <div class="card" id="class-card" style="display:none">
       <div class="card-title">🏫 選擇班級</div>
       <div class="field">
@@ -260,8 +208,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
         </div>
       </div>
     </div>
-
-    <!-- 英聽區塊 -->
     <div id="listen-section" style="display:none">
       <div class="card">
         <div class="card-title">🎧 設備狀態</div>
@@ -278,8 +224,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
       </div>
       <button class="btn btn-orange" onclick="submitRecord()" style="margin-bottom:10px">✓ 確認提交</button>
     </div>
-
-    <!-- 缺考區塊 -->
     <div id="absence-section" style="display:none">
       <div class="card">
         <div class="picker-header">
@@ -292,9 +236,7 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
           <button class="manual-add-btn" onclick="manualAdd()">＋ 加入</button>
         </div>
       </div>
-
       <div class="all-present-notice" id="all-present-notice">✓ 已標記全班到齊，無人缺考</div>
-
       <div class="card" id="summary-card" style="display:none">
         <div class="card-title">已選座號 <span id="chips-count" class="badge">0</span></div>
         <div class="seat-summary" id="seat-summary"></div>
@@ -302,17 +244,14 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
           <button class="btn btn-ghost" onclick="clearSeats()">清除全部</button>
         </div>
       </div>
-
       <button class="btn btn-success" onclick="submitRecord()" style="margin-bottom:10px">✓ 確認提交登錄</button>
     </div>
-
     <div class="sync-bar">
       <span class="sync-dot ok" id="sync-dot-entry"></span>
       <span id="sync-label-entry">就緒</span>
     </div>
   </div>
 
-  <!-- 紀錄頁 -->
   <div class="page" id="page-records">
     <div class="stat-row">
       <div class="stat-pill"><div class="stat-num" id="stat-total">0</div><div class="stat-label">總筆數</div></div>
@@ -337,7 +276,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
     </div>
   </div>
 
-  <!-- 設定頁 -->
   <div class="page" id="page-settings">
     <div class="card">
       <div class="card-title">🔗 連線設定</div>
@@ -346,7 +284,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
           <div class="settings-label">Apps Script 網址</div>
           <div class="settings-sub" id="settings-url-display">—</div>
         </div>
-        <button class="settings-btn" onclick="resetAPI()">重設</button>
       </div>
       <div class="settings-item">
         <div><div class="settings-label">重新整理紀錄</div></div>
@@ -371,30 +308,107 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
 <div id="toast"></div>
 
 <script>
-const WD = ['日','一','二','三','四','五','六'];
-(()=>{ const n=new Date(); document.getElementById('date-display').textContent=`${n.getFullYear()}.${n.getMonth()+1}.${n.getDate()} (${WD[n.getDay()]})`; })();
+/*
+ * ══════════════════════════════════════════════════════
+ *  全域錯誤攔截
+ *  - 跨域 fetch 失敗時瀏覽器只會給 "Script error."
+ *  - 未捕獲的 Promise rejection（fetch 超時等）
+ *  - 在此統一攔截，避免 console 紅字
+ * ══════════════════════════════════════════════════════
+ */
+window.onerror = function() { return true; };
+window.addEventListener('unhandledrejection', function(e) { e.preventDefault(); });
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbwzSbn-0MQ4RQ0HferrWJOWKwjU43cVA3AGeMF59tZVCRNW0xD0KLMlxmFpzeM1NznA/exec';
+/*
+ * ══════════════════════════════════════════════════════
+ *  常數
+ * ══════════════════════════════════════════════════════
+ */
+var WD = ['日','一','二','三','四','五','六'];
+var now_init = new Date();
+document.getElementById('date-display').textContent =
+  now_init.getFullYear() + '.' + (now_init.getMonth()+1) + '.' + now_init.getDate() + ' (' + WD[now_init.getDay()] + ')';
 
+var API_URL = 'https://script.google.com/macros/s/AKfycbwzSbn-0MQ4RQ0HferrWJOWKwjU43cVA3AGeMF59tZVCRNW0xD0KLMlxmFpzeM1NznA/exec';
 
-function initApp() {
-  document.getElementById('setup-screen').style.display = 'none';
-  document.getElementById('main-app').style.display = 'block';
-  document.getElementById('settings-url-display').textContent = API_URL;
-  buildPicker(); loadRecords();
+/*
+ * ══════════════════════════════════════════════════════
+ *  API 封裝
+ *
+ *  Google Apps Script Web App 注意事項：
+ *  1. 部署後的 URL 會 302 redirect → 需要 redirect:'follow'
+ *  2. POST + Content-Type: application/json → 觸發 CORS preflight (OPTIONS)
+ *     但 GAS 不處理 OPTIONS → 直接失敗
+ *  3. 解法：用 Content-Type: text/plain 避免 preflight
+ *  4. GAS 端 doPost(e) 用 JSON.parse(e.postData.contents) 解析
+ * ══════════════════════════════════════════════════════
+ */
+function apiGet(params) {
+  var url = API_URL + '?' + new URLSearchParams(params).toString();
+  return fetch(url, { redirect: 'follow' })
+    .then(function(res) { return res.text(); })
+    .then(function(text) { return JSON.parse(text); });
 }
-initApp();
 
+function apiPost(payload) {
+  return fetch(API_URL, {
+    method: 'POST',
+    redirect: 'follow',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  })
+  .then(function(res) { return res.text(); })
+  .then(function(text) { return JSON.parse(text); });
+}
+
+/*
+ * ══════════════════════════════════════════════════════
+ *  工具函式
+ * ══════════════════════════════════════════════════════
+ */
+function escapeHtml(s) {
+  if (!s) return '';
+  var d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+var toastTimer;
+function showToast(msg) {
+  var el = document.getElementById('toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { el.classList.remove('show'); }, 2400);
+}
+
+function setSyncState(page, state, label) {
+  var dot = document.getElementById('sync-dot-' + page);
+  var lbl = document.getElementById('sync-label-' + page);
+  if (dot) dot.className = 'sync-dot ' + state;
+  if (lbl) lbl.textContent = label;
+}
+
+/*
+ * ══════════════════════════════════════════════════════
+ *  頁面切換
+ * ══════════════════════════════════════════════════════
+ */
 function switchPage(name) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
   document.getElementById('page-' + name).classList.add('active');
   document.getElementById('nav-' + name).classList.add('active');
   if (name === 'records') loadRecords();
 }
 
-// ── 任務 ──
-let currentTask = '';
+/*
+ * ══════════════════════════════════════════════════════
+ *  任務選擇
+ * ══════════════════════════════════════════════════════
+ */
+var currentTask = '';
 function selectTask(task) {
   currentTask = task;
   document.getElementById('task-listen').className  = 'task-card' + (task === 'listen'  ? ' sel-listen'  : '');
@@ -405,19 +419,32 @@ function selectTask(task) {
   if (task === 'listen') { listenStatus = ''; resetListenUI(); }
 }
 
-// ── 班級 ──
+/*
+ * ══════════════════════════════════════════════════════
+ *  班級選擇
+ * ══════════════════════════════════════════════════════
+ */
 function updateClassOpts() {
-  const s = document.getElementById('sel-school').value;
-  const sel = document.getElementById('sel-class');
-  sel.innerHTML = '';
+  var s = document.getElementById('sel-school').value;
+  var sel = document.getElementById('sel-class');
   if (!s) { sel.innerHTML = '<option value="">請先選擇年段</option>'; return; }
-  sel.innerHTML = '<option value="">請選擇班級</option>';
-  if (s === '高中部') ['甲','乙','丙','丁','戊','己','庚'].forEach(c => sel.innerHTML += `<option value="${c}">${c}班</option>`);
-  else for (let i = 1; i <= 10; i++) sel.innerHTML += `<option value="${i}">${i}班</option>`;
+  var opts = '<option value="">請選擇班級</option>';
+  if (s === '高中部') {
+    ['甲','乙','丙','丁','戊','己','庚'].forEach(function(c) {
+      opts += '<option value="' + c + '">' + c + '班</option>';
+    });
+  } else {
+    for (var i = 1; i <= 10; i++) opts += '<option value="' + i + '">' + i + '班</option>';
+  }
+  sel.innerHTML = opts;
 }
 
-// ── 英聽 ──
-let listenStatus = '';
+/*
+ * ══════════════════════════════════════════════════════
+ *  英聽狀態
+ * ══════════════════════════════════════════════════════
+ */
+var listenStatus = '';
 function selectListenStatus(s) {
   listenStatus = s;
   document.getElementById('btn-normal').className   = 'status-btn' + (s === 'normal'   ? ' sel-normal'   : '');
@@ -432,33 +459,49 @@ function resetListenUI() {
   document.getElementById('listen-note').value = '';
 }
 
-// ── 座號 ──
-const MAX_SEAT = 45;
-let currentSeats = new Set();
-let allPresent = false;
+/*
+ * ══════════════════════════════════════════════════════
+ *  座號選取
+ * ══════════════════════════════════════════════════════
+ */
+var MAX_SEAT = 45;
+var currentSeats = new Set();
+var allPresent = false;
 
 function buildPicker() {
-  const p = document.getElementById('seat-picker'); p.innerHTML = '';
-  for (let i = 1; i <= MAX_SEAT; i++) {
-    const b = document.createElement('button');
-    b.className = 'seat-btn'; b.textContent = i; b.dataset.seat = i;
-    b.onclick = () => toggleSeat(i); p.appendChild(b);
+  var p = document.getElementById('seat-picker');
+  p.innerHTML = '';
+  for (var i = 1; i <= MAX_SEAT; i++) {
+    var b = document.createElement('button');
+    b.className = 'seat-btn';
+    b.textContent = i;
+    b.dataset.seat = i;
+    b.onclick = (function(num) { return function() { toggleSeat(num); }; })(i);
+    p.appendChild(b);
   }
 }
+
 function toggleSeat(n) {
   allPresent = false;
   document.getElementById('all-present-notice').style.display = 'none';
   document.getElementById('present-btn').classList.remove('active');
-  currentSeats.has(n) ? currentSeats.delete(n) : currentSeats.add(n);
-  syncPickerUI(); renderSummary();
+  if (currentSeats.has(n)) currentSeats.delete(n); else currentSeats.add(n);
+  syncPickerUI();
+  renderSummary();
 }
+
 function syncPickerUI() {
-  document.querySelectorAll('.seat-btn').forEach(b => b.classList.toggle('selected', currentSeats.has(parseInt(b.dataset.seat))));
+  document.querySelectorAll('.seat-btn').forEach(function(b) {
+    b.classList.toggle('selected', currentSeats.has(parseInt(b.dataset.seat)));
+  });
 }
+
 function toggleAllPresent() {
   allPresent = !allPresent;
   if (allPresent) {
-    currentSeats.clear(); syncPickerUI(); renderSummary();
+    currentSeats.clear();
+    syncPickerUI();
+    renderSummary();
     document.getElementById('all-present-notice').style.display = 'block';
     document.getElementById('present-btn').classList.add('active');
     showToast('全班到齊，可直接提交');
@@ -467,57 +510,76 @@ function toggleAllPresent() {
     document.getElementById('present-btn').classList.remove('active');
   }
 }
+
 function manualAdd() {
   allPresent = false;
   document.getElementById('all-present-notice').style.display = 'none';
   document.getElementById('present-btn').classList.remove('active');
-  const parts = document.getElementById('seat-input').value.split(/[\s,，、\/]+/).filter(Boolean);
-  let added = 0;
-  parts.forEach(p => {
-    const n = parseInt(p);
+  var parts = document.getElementById('seat-input').value.split(/[\s,，、\/]+/).filter(Boolean);
+  var added = 0;
+  parts.forEach(function(p) {
+    var n = parseInt(p);
     if (!isNaN(n) && n > 0 && n <= 99 && !currentSeats.has(n)) {
       currentSeats.add(n);
       if (n > MAX_SEAT) {
-        const picker = document.getElementById('seat-picker');
-        if (!picker.querySelector(`[data-seat="${n}"]`)) {
-          const b = document.createElement('button');
-          b.className = 'seat-btn selected'; b.textContent = n; b.dataset.seat = n;
-          b.onclick = () => toggleSeat(n); picker.appendChild(b);
+        var picker = document.getElementById('seat-picker');
+        if (!picker.querySelector('[data-seat="' + n + '"]')) {
+          var b = document.createElement('button');
+          b.className = 'seat-btn selected';
+          b.textContent = n;
+          b.dataset.seat = n;
+          b.onclick = (function(num) { return function() { toggleSeat(num); }; })(n);
+          picker.appendChild(b);
         }
       }
       added++;
     }
   });
   document.getElementById('seat-input').value = '';
-  syncPickerUI(); renderSummary();
-  showToast(added ? `✅ 已加入 ${added} 個座號` : '⚠️ 未新增（重複或格式錯誤）');
+  syncPickerUI();
+  renderSummary();
+  showToast(added ? '✅ 已加入 ' + added + ' 個座號' : '⚠️ 未新增（重複或格式錯誤）');
 }
-document.getElementById('seat-input').addEventListener('keydown', e => { if (e.key === 'Enter') manualAdd(); });
+
+document.getElementById('seat-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') manualAdd();
+});
 
 function renderSummary() {
-  const sorted = [...currentSeats].sort((a,b) => a-b);
+  var sorted = Array.from(currentSeats).sort(function(a,b) { return a - b; });
   document.getElementById('chips-count').textContent = sorted.length;
-  const card = document.getElementById('summary-card');
+  var card = document.getElementById('summary-card');
   if (!sorted.length) { card.style.display = 'none'; return; }
   card.style.display = 'block';
-  document.getElementById('seat-summary').innerHTML = sorted.map(n =>
-    `<div class="seat-chip">${String(n).padStart(2,'0')}<button class="chip-del" onclick="removeSeat(${n})">×</button></div>`
-  ).join('');
-}
-function removeSeat(n) { currentSeats.delete(n); syncPickerUI(); renderSummary(); }
-function clearSeats() {
-  currentSeats.clear(); allPresent = false;
-  document.getElementById('all-present-notice').style.display = 'none';
-  document.getElementById('present-btn').classList.remove('active');
-  document.querySelectorAll('.seat-btn').forEach(b => { if (parseInt(b.dataset.seat) > MAX_SEAT) b.remove(); });
-  syncPickerUI(); renderSummary(); showToast('已清除所有座號');
+  document.getElementById('seat-summary').innerHTML = sorted.map(function(n) {
+    return '<div class="seat-chip">' + String(n).padStart(2,'0') + '<button class="chip-del" onclick="removeSeat(' + n + ')">×</button></div>';
+  }).join('');
 }
 
-// ── 提交 ──
-async function submitRecord() {
-  const school = document.getElementById('sel-school').value;
-  const g      = document.getElementById('sel-grade').value;
-  const c      = document.getElementById('sel-class').value;
+function removeSeat(n) { currentSeats.delete(n); syncPickerUI(); renderSummary(); }
+
+function clearSeats() {
+  currentSeats.clear();
+  allPresent = false;
+  document.getElementById('all-present-notice').style.display = 'none';
+  document.getElementById('present-btn').classList.remove('active');
+  document.querySelectorAll('.seat-btn').forEach(function(b) {
+    if (parseInt(b.dataset.seat) > MAX_SEAT) b.remove();
+  });
+  syncPickerUI();
+  renderSummary();
+  showToast('已清除所有座號');
+}
+
+/*
+ * ══════════════════════════════════════════════════════
+ *  提交紀錄
+ * ══════════════════════════════════════════════════════
+ */
+function submitRecord() {
+  var school = document.getElementById('sel-school').value;
+  var g      = document.getElementById('sel-grade').value;
+  var c      = document.getElementById('sel-class').value;
   if (!currentTask)        { showToast('⚠️ 請先選擇任務'); return; }
   if (!school || !g || !c) { showToast('⚠️ 請選擇年段、年級和班級'); return; }
   if (currentTask === 'listen') {
@@ -526,157 +588,181 @@ async function submitRecord() {
   }
   if (currentTask === 'absence' && !allPresent && currentSeats.size === 0) { showToast('⚠️ 請選擇座號，或點「全班到齊」'); return; }
 
-  const now = new Date();
-  const rec = {
+  var now = new Date();
+  var rec = {
     id: Date.now(),
     taskType:     currentTask,
-    className:    `${school}${g}年${c}班`,
-    seats:        currentTask === 'absence' ? [...currentSeats].sort((a,b) => a-b) : [],
+    className:    school + g + '年' + c + '班',
+    seats:        currentTask === 'absence' ? Array.from(currentSeats).sort(function(a,b){return a-b}) : [],
     allPresent:   currentTask === 'absence' ? allPresent : false,
     listenStatus: currentTask === 'listen'  ? listenStatus : '',
     listenNote:   currentTask === 'listen'  ? document.getElementById('listen-note').value.trim() : '',
-    date: `${now.getMonth()+1}/${now.getDate()}`,
-    time: `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`
+    date: (now.getMonth()+1) + '/' + now.getDate(),
+    time: String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0')
   };
 
   setSyncState('entry', 'loading', '儲存中...');
-  try {
-    const res = await fetch(API_URL, { method:'POST', body: JSON.stringify({ action:'add', record: rec }) });
-    const data = await res.json();
-    if (!data.ok) throw new Error();
-    setSyncState('entry', 'ok', '已同步到試算表');
-    showToast(`🎉 ${rec.className} 登錄完成！`);
-    if (currentTask === 'absence') clearSeats();
-    if (currentTask === 'listen')  { listenStatus = ''; resetListenUI(); }
-    await loadRecords();
-  } catch(e) { setSyncState('entry', 'error', '儲存失敗，請重試'); showToast('❌ 儲存失敗，請確認連線'); }
+  apiPost({ action: 'add', record: rec })
+    .then(function(data) {
+      if (!data.ok) throw new Error('not ok');
+      setSyncState('entry', 'ok', '已同步到試算表');
+      showToast('🎉 ' + rec.className + ' 登錄完成！');
+      if (currentTask === 'absence') clearSeats();
+      if (currentTask === 'listen')  { listenStatus = ''; resetListenUI(); }
+      return loadRecords();
+    })
+    .catch(function() {
+      setSyncState('entry', 'error', '儲存失敗，請重試');
+      showToast('❌ 儲存失敗，請確認連線');
+    });
 }
 
-// ── 紀錄 ──
-let records = [];
-let currentFilter = 'all';
+/*
+ * ══════════════════════════════════════════════════════
+ *  紀錄管理
+ * ══════════════════════════════════════════════════════
+ */
+var records = [];
+var currentFilter = 'all';
 
-async function loadRecords() {
+function loadRecords() {
   setSyncState('rec', 'loading', '載入中...');
-  try {
-    const res = await fetch(API_URL + '?action=getAll');
-    const data = await res.json();
-    records = data.records || [];
-    renderRecords(); updateBadge();
-    setSyncState('rec', 'ok', `已更新，共 ${records.length} 筆`);
-  } catch(e) { setSyncState('rec', 'error', '載入失敗'); showToast('❌ 載入失敗'); }
+  return apiGet({ action: 'getAll' })
+    .then(function(data) {
+      records = data.records || [];
+      renderRecords();
+      updateBadge();
+      setSyncState('rec', 'ok', '已更新，共 ' + records.length + ' 筆');
+    })
+    .catch(function() {
+      setSyncState('rec', 'error', '載入失敗');
+    });
 }
 
 function setFilter(f) {
   currentFilter = f;
-  document.querySelectorAll('.filter-btn').forEach(b => b.className = 'filter-btn');
-  const cls = { all:'fa', listen:'fl', absence:'fx' };
+  document.querySelectorAll('.filter-btn').forEach(function(b) { b.className = 'filter-btn'; });
+  var cls = { all:'fa', listen:'fl', absence:'fx' };
   document.getElementById('filter-' + f).classList.add(cls[f]);
   renderRecords();
 }
 
 function renderRecords() {
   document.getElementById('stat-total').textContent   = records.length;
-  document.getElementById('stat-listen').textContent  = records.filter(r => r.taskType === 'listen').length;
-  document.getElementById('stat-absence').textContent = records.filter(r => r.taskType === 'absence').length;
-  const list = currentFilter === 'all' ? records : records.filter(r => r.taskType === currentFilter);
-  const container = document.getElementById('records-container');
-  if (!list.length) { container.innerHTML = '<p class="empty-hint" style="text-align:center;padding:32px 0">尚無紀錄</p>'; return; }
-  container.innerHTML = list.map(r => {
-    const isL = r.taskType === 'listen';
-    const tag = `<span class="rec-tag ${isL ? 'tl' : 'ta'}">${isL ? '英聽' : '缺考'}</span>`;
-    let body = '';
+  document.getElementById('stat-listen').textContent  = records.filter(function(r) { return r.taskType === 'listen'; }).length;
+  document.getElementById('stat-absence').textContent = records.filter(function(r) { return r.taskType === 'absence'; }).length;
+  var list = currentFilter === 'all' ? records : records.filter(function(r) { return r.taskType === currentFilter; });
+  var container = document.getElementById('records-container');
+  if (!list.length) {
+    container.innerHTML = '<p class="empty-hint" style="text-align:center;padding:32px 0">尚無紀錄</p>';
+    return;
+  }
+  container.innerHTML = list.map(function(r) {
+    var isL = r.taskType === 'listen';
+    var tag = '<span class="rec-tag ' + (isL ? 'tl' : 'ta') + '">' + (isL ? '英聽' : '缺考') + '</span>';
+    var body = '';
     if (isL) {
       body = r.listenStatus === 'normal'
-        ? `<div class="listen-ok">✓ 設備正常</div>`
-        : `<div class="listen-err">✗ 設備異常</div>${r.listenNote ? `<div class="listen-note-text">${r.listenNote}</div>` : ''}`;
+        ? '<div class="listen-ok">✓ 設備正常</div>'
+        : '<div class="listen-err">✗ 設備異常</div>' + (r.listenNote ? '<div class="listen-note-text">' + escapeHtml(r.listenNote) + '</div>' : '');
     } else {
-      body = `<div class="rec-seats">${r.seats.length === 0
-        ? `<span style="color:var(--green);font-size:13px;font-weight:700">✓ 全班到齊</span>`
-        : r.seats.map(s => `<span class="mini-chip">${String(s).padStart(2,'0')}</span>`).join('')
-      }</div>`;
+      body = '<div class="rec-seats">' + (r.seats.length === 0
+        ? '<span style="color:var(--green);font-size:13px;font-weight:700">✓ 全班到齊</span>'
+        : r.seats.map(function(s) { return '<span class="mini-chip">' + String(s).padStart(2,'0') + '</span>'; }).join('')
+      ) + '</div>';
     }
-    const count = isL
+    var count = isL
       ? (r.listenStatus === 'normal' ? '設備正常' : '設備異常')
-      : (r.seats.length === 0 ? '無人缺考' : `缺考 ${r.seats.length} 人`);
-    return `<div class="record-item">
-      <div class="rec-header"><span class="rec-class">${tag}${r.className}</span><span class="rec-time">${r.date} ${r.time}</span></div>
-      <div class="rec-body">${body}</div>
-      <div class="rec-footer">
-        <span class="rec-count">${count}</span>
-        <div class="rec-btns">
-          <button class="rec-btn copy" onclick="copyRecord(${r.id})">複製</button>
-          <button class="rec-btn del"  onclick="deleteRecord(${r.id})">刪除</button>
-        </div>
-      </div>
-    </div>`;
+      : (r.seats.length === 0 ? '無人缺考' : '缺考 ' + r.seats.length + ' 人');
+    return '<div class="record-item">'
+      + '<div class="rec-header"><span class="rec-class">' + tag + escapeHtml(r.className) + '</span><span class="rec-time">' + escapeHtml(r.date + ' ' + r.time) + '</span></div>'
+      + '<div class="rec-body">' + body + '</div>'
+      + '<div class="rec-footer">'
+      + '<span class="rec-count">' + count + '</span>'
+      + '<div class="rec-btns">'
+      + '<button class="rec-btn copy" onclick="copyRecord(' + r.id + ')">複製</button>'
+      + '<button class="rec-btn del"  onclick="deleteRecord(' + r.id + ')">刪除</button>'
+      + '</div></div></div>';
   }).join('');
 }
 
-async function deleteRecord(id) {
+function deleteRecord(id) {
   setSyncState('rec', 'loading', '刪除中...');
-  try { await fetch(API_URL, { method:'POST', body: JSON.stringify({ action:'delete', id }) }); showToast('已刪除'); await loadRecords(); }
-  catch(e) { showToast('❌ 刪除失敗'); }
+  apiPost({ action: 'delete', id: id })
+    .then(function() { showToast('已刪除'); return loadRecords(); })
+    .catch(function() { showToast('❌ 刪除失敗'); });
 }
-async function clearAllRecords() {
+
+function clearAllRecords() {
   if (!records.length) { showToast('沒有紀錄可清除'); return; }
-  if (!confirm(`確定要清除全部 ${records.length} 筆紀錄？`)) return;
+  if (!confirm('確定要清除全部 ' + records.length + ' 筆紀錄？')) return;
   setSyncState('rec', 'loading', '清除中...');
-  try { await fetch(API_URL, { method:'POST', body: JSON.stringify({ action:'clear' }) }); showToast('已清除全部紀錄'); await loadRecords(); }
-  catch(e) { showToast('❌ 清除失敗'); }
+  apiPost({ action: 'clear' })
+    .then(function() { showToast('已清除全部紀錄'); return loadRecords(); })
+    .catch(function() { showToast('❌ 清除失敗'); });
 }
 
 function copyRecord(id) {
-  const r = records.find(x => x.id == id); if (!r) return;
-  let t = `【${r.taskType === 'listen' ? '英聽測試' : '缺考登錄'}】\n班級：${r.className}\n`;
+  var r = records.find(function(x) { return x.id == id; });
+  if (!r) return;
+  var t = '【' + (r.taskType === 'listen' ? '英聽測試' : '缺考登錄') + '】\n班級：' + r.className + '\n';
   if (r.taskType === 'listen') {
-    t += `設備狀態：${r.listenStatus === 'normal' ? '正常' : '異常'}`;
-    if (r.listenNote) t += `\n異常說明：${r.listenNote}`;
+    t += '設備狀態：' + (r.listenStatus === 'normal' ? '正常' : '異常');
+    if (r.listenNote) t += '\n異常說明：' + r.listenNote;
   } else {
-    const s = r.seats.length === 0 ? '無（全班到齊）' : r.seats.map(s => String(s).padStart(2,'0')).join('、');
-    t += `缺考座號：${s}\n缺考人數：${r.seats.length} 人`;
+    var seats = r.seats.length === 0
+      ? '無（全班到齊）'
+      : r.seats.map(function(s) { return String(s).padStart(2,'0'); }).join('、');
+    t += '缺考座號：' + seats + '\n缺考人數：' + r.seats.length + ' 人';
   }
-  copyText(t + `\n時間：${r.date} ${r.time}`);
+  copyText(t + '\n時間：' + r.date + ' ' + r.time);
 }
 
 function copyAll() {
   if (!records.length) { showToast('沒有紀錄可複製'); return; }
-  const d = `${new Date().getMonth()+1}/${new Date().getDate()}`;
-  const lines = [`📋 登錄紀錄彙整（${d}）\n${'─'.repeat(18)}`];
-  records.forEach((r, i) => {
-    const detail = r.taskType === 'listen'
-      ? (r.listenStatus === 'normal' ? '設備正常' : `設備異常：${r.listenNote || '（無說明）'}`)
-      : (r.seats.length === 0 ? '全班到齊（無人缺考）' : `缺考：${r.seats.map(s=>String(s).padStart(2,'0')).join('、')}（共${r.seats.length}人）`);
-    lines.push(`${i+1}. [${r.taskType === 'listen' ? '英聽' : '缺考'}] ${r.className}\n   ${detail}`);
+  var d = (new Date().getMonth()+1) + '/' + new Date().getDate();
+  var lines = ['📋 登錄紀錄彙整（' + d + '）\n' + '─'.repeat(18)];
+  records.forEach(function(r, i) {
+    var detail = r.taskType === 'listen'
+      ? (r.listenStatus === 'normal' ? '設備正常' : '設備異常：' + (r.listenNote || '（無說明）'))
+      : (r.seats.length === 0 ? '全班到齊（無人缺考）' : '缺考：' + r.seats.map(function(s){return String(s).padStart(2,'0')}).join('、') + '（共' + r.seats.length + '人）');
+    lines.push((i+1) + '. [' + (r.taskType === 'listen' ? '英聽' : '缺考') + '] ' + r.className + '\n   ' + detail);
   });
   copyText(lines.join('\n'));
 }
 
 function copyText(t) {
-  if (navigator.clipboard) navigator.clipboard.writeText(t).then(() => showToast('✅ 已複製到剪貼簿'));
-  else { const ta = document.createElement('textarea'); ta.value = t; ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('✅ 已複製到剪貼簿'); }
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(t).then(function() { showToast('✅ 已複製到剪貼簿'); }).catch(function() {});
+  } else {
+    var ta = document.createElement('textarea');
+    ta.value = t;
+    ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('✅ 已複製到剪貼簿');
+  }
 }
 
 function updateBadge() {
-  const b = document.getElementById('nav-badge');
-  if (!records.length) { b.style.display='none'; return; }
-  b.style.display='inline-flex'; b.textContent=records.length;
+  var b = document.getElementById('nav-badge');
+  if (!b) return;
+  if (!records.length) { b.style.display = 'none'; return; }
+  b.style.display = 'inline-flex';
+  b.textContent = records.length;
 }
 
-function setSyncState(page, state, label) {
-  const dot = document.getElementById(`sync-dot-${page}`);
-  const lbl = document.getElementById(`sync-label-${page}`);
-  if (dot) dot.className = 'sync-dot ' + state;
-  if (lbl) lbl.textContent = label;
-}
-
-let toastTimer;
-function showToast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg; el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
-}
+/*
+ * ══════════════════════════════════════════════════════
+ *  啟動
+ * ══════════════════════════════════════════════════════
+ */
+document.getElementById('main-app').style.display = 'block';
+document.getElementById('settings-url-display').textContent = API_URL;
+buildPicker();
+loadRecords();
 </script>
 </body>
 </html>
