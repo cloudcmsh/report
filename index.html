@@ -98,7 +98,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
 .btn-orange  { background:var(--orange); color:#fff; }
 .btn-blue    { background:var(--blue);   color:#0d1117; }
 .btn-ghost   { background:transparent; border:1px solid var(--border); color:var(--text-muted); font-size:13px; padding:9px; }
-.btn-danger  { background:var(--red-dim); border:1px solid var(--red); color:var(--red); font-size:13px; padding:9px; }
 
 .sync-bar { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-muted); padding: 10px 0 0; }
 .sync-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
@@ -153,7 +152,6 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
 .settings-sub { font-size:11px; color:var(--text-muted); margin-top:2px; font-family:'Space Mono',monospace; word-break:break-all; }
 .settings-btn { background:none; border:1px solid var(--border); color:var(--text-muted); font-size:12px; padding:5px 12px; border-radius:6px; cursor:pointer; white-space:nowrap; margin-left:12px; flex-shrink:0; }
 
-/* SETUP PAGE */
 .setup-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:80vh; padding:24px 20px; }
 .setup-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:28px 22px; width:100%; max-width:400px; }
 .setup-icon { font-size:48px; text-align:center; margin-bottom:16px; }
@@ -176,24 +174,18 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
   </div>
 </div>
 
-<!-- ══════════════ 設定連線畫面 ══════════════ -->
+<!-- ══════════════ 解鎖畫面（只需輸入密碼） ══════════════ -->
 <div id="setup-screen" class="setup-screen">
   <div class="setup-card">
     <div class="setup-icon">🔐</div>
-    <div class="setup-title">連線設定</div>
-    <div class="setup-desc">首次使用請輸入 Apps Script 網址和存取金鑰。<br>設定會儲存在此裝置中。</div>
+    <div class="setup-title">輸入密碼</div>
+    <div class="setup-desc">請輸入管理員提供的存取密碼。</div>
     <div class="setup-error" id="setup-error"></div>
     <div class="setup-field">
-      <label>APPS SCRIPT 網址</label>
-      <input type="text" id="setup-url" placeholder="https://script.google.com/macros/s/..." autocomplete="off" autocapitalize="off">
-      <div class="setup-hint">貼上你部署的 Web App 網址</div>
+      <label>存取密碼</label>
+      <input type="password" id="setup-token" placeholder="請輸入密碼" autocomplete="off">
     </div>
-    <div class="setup-field">
-      <label>存取金鑰 (TOKEN)</label>
-      <input type="password" id="setup-token" placeholder="輸入你在 GAS 設定的 SECRET_TOKEN" autocomplete="off">
-      <div class="setup-hint">與 Apps Script 端設定的 TOKEN 一致</div>
-    </div>
-    <button class="btn btn-blue" onclick="saveSetup()" style="margin-top:8px">🔗 連線並儲存</button>
+    <button class="btn btn-blue" onclick="unlockApp()" style="margin-top:8px">🔓 解鎖</button>
   </div>
 </div>
 
@@ -217,690 +209,280 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
     </div>
     <div class="card" id="class-card" style="display:none">
       <div class="card-title">🏫 選擇班級</div>
-      <div class="field">
-        <label>年段</label>
-        <div class="select-wrap">
-          <select id="sel-school" onchange="updateClassOpts()">
-            <option value="">請選擇年段</option>
-            <option value="高中部">高中部</option>
-            <option value="國中部">國中部</option>
-          </select>
-        </div>
-      </div>
-      <div class="field">
-        <label>年級</label>
-        <div class="select-wrap">
-          <select id="sel-grade">
-            <option value="">請選擇年級</option>
-            <option value="一">一年級</option>
-            <option value="二">二年級</option>
-            <option value="三">三年級</option>
-          </select>
-        </div>
-      </div>
-      <div class="field" style="margin-bottom:0">
-        <label>班級</label>
-        <div class="select-wrap">
-          <select id="sel-class"><option value="">請先選擇年段</option></select>
-        </div>
-      </div>
+      <div class="field"><label>年段</label><div class="select-wrap"><select id="sel-school" onchange="updateClassOpts()"><option value="">請選擇年段</option><option value="高中部">高中部</option><option value="國中部">國中部</option></select></div></div>
+      <div class="field"><label>年級</label><div class="select-wrap"><select id="sel-grade"><option value="">請選擇年級</option><option value="一">一年級</option><option value="二">二年級</option><option value="三">三年級</option></select></div></div>
+      <div class="field" style="margin-bottom:0"><label>班級</label><div class="select-wrap"><select id="sel-class"><option value="">請先選擇年段</option></select></div></div>
     </div>
     <div id="listen-section" style="display:none">
-      <div class="card">
-        <div class="card-title">🎧 設備狀態</div>
-        <div class="listen-status-row">
-          <button class="status-btn" id="btn-normal"   onclick="selectListenStatus('normal')">✓ 正常</button>
-          <button class="status-btn" id="btn-abnormal" onclick="selectListenStatus('abnormal')">✗ 異常</button>
-        </div>
-        <div class="note-wrap" id="note-wrap">
-          <div class="field" style="margin-bottom:0">
-            <label>異常說明</label>
-            <textarea id="listen-note" placeholder="請描述異常狀況，例如：3號座位耳機無聲、播放器無法開機..."></textarea>
-          </div>
-        </div>
-      </div>
+      <div class="card"><div class="card-title">🎧 設備狀態</div><div class="listen-status-row"><button class="status-btn" id="btn-normal" onclick="selectListenStatus('normal')">✓ 正常</button><button class="status-btn" id="btn-abnormal" onclick="selectListenStatus('abnormal')">✗ 異常</button></div><div class="note-wrap" id="note-wrap"><div class="field" style="margin-bottom:0"><label>異常說明</label><textarea id="listen-note" placeholder="請描述異常狀況，例如：3號座位耳機無聲、播放器無法開機..."></textarea></div></div></div>
       <button class="btn btn-orange" onclick="submitRecord()" style="margin-bottom:10px">✓ 確認提交</button>
     </div>
     <div id="absence-section" style="display:none">
-      <div class="card">
-        <div class="picker-header">
-          <span>缺考座號</span>
-          <button class="present-btn" id="present-btn" onclick="toggleAllPresent()">全班到齊</button>
-        </div>
-        <div class="seat-picker" id="seat-picker"></div>
-        <div class="manual-row">
-          <input type="text" id="seat-input" placeholder="手動輸入座號" inputmode="numeric" autocomplete="off">
-          <button class="manual-add-btn" onclick="manualAdd()">＋ 加入</button>
-        </div>
-      </div>
+      <div class="card"><div class="picker-header"><span>缺考座號</span><button class="present-btn" id="present-btn" onclick="toggleAllPresent()">全班到齊</button></div><div class="seat-picker" id="seat-picker"></div><div class="manual-row"><input type="text" id="seat-input" placeholder="手動輸入座號" inputmode="numeric" autocomplete="off"><button class="manual-add-btn" onclick="manualAdd()">＋ 加入</button></div></div>
       <div class="all-present-notice" id="all-present-notice">✓ 已標記全班到齊，無人缺考</div>
-      <div class="card" id="summary-card" style="display:none">
-        <div class="card-title">已選座號 <span id="chips-count" class="badge">0</span></div>
-        <div class="seat-summary" id="seat-summary"></div>
-        <div style="margin-top:10px">
-          <button class="btn btn-ghost" onclick="clearSeats()">清除全部</button>
-        </div>
-      </div>
+      <div class="card" id="summary-card" style="display:none"><div class="card-title">已選座號 <span id="chips-count" class="badge">0</span></div><div class="seat-summary" id="seat-summary"></div><div style="margin-top:10px"><button class="btn btn-ghost" onclick="clearSeats()">清除全部</button></div></div>
       <button class="btn btn-success" onclick="submitRecord()" style="margin-bottom:10px">✓ 確認提交登錄</button>
     </div>
-    <div class="sync-bar">
-      <span class="sync-dot ok" id="sync-dot-entry"></span>
-      <span id="sync-label-entry">就緒</span>
-    </div>
+    <div class="sync-bar"><span class="sync-dot ok" id="sync-dot-entry"></span><span id="sync-label-entry">就緒</span></div>
   </div>
 
   <div class="page" id="page-records">
-    <div class="stat-row">
-      <div class="stat-pill"><div class="stat-num" id="stat-total">0</div><div class="stat-label">總筆數</div></div>
-      <div class="stat-pill"><div class="stat-num" id="stat-listen">0</div><div class="stat-label">英聽回報</div></div>
-      <div class="stat-pill"><div class="stat-num" id="stat-absence">0</div><div class="stat-label">缺考班數</div></div>
-    </div>
-    <div class="filter-row">
-      <button class="filter-btn fa" id="filter-all"     onclick="setFilter('all')">全部</button>
-      <button class="filter-btn"   id="filter-listen"  onclick="setFilter('listen')">英聽</button>
-      <button class="filter-btn"   id="filter-absence" onclick="setFilter('absence')">缺考</button>
-    </div>
-    <div class="action-row">
-      <button class="btn btn-ghost" onclick="copyAll()">📋 複製全部</button>
-      <button class="btn btn-ghost" onclick="clearAllRecords()">🗑 清除全部</button>
-    </div>
-    <div id="records-container">
-      <p class="empty-hint" style="text-align:center;padding:32px 0">尚無紀錄</p>
-    </div>
-    <div class="sync-bar">
-      <span class="sync-dot ok" id="sync-dot-rec"></span>
-      <span id="sync-label-rec">就緒</span>
-    </div>
+    <div class="stat-row"><div class="stat-pill"><div class="stat-num" id="stat-total">0</div><div class="stat-label">總筆數</div></div><div class="stat-pill"><div class="stat-num" id="stat-listen">0</div><div class="stat-label">英聽回報</div></div><div class="stat-pill"><div class="stat-num" id="stat-absence">0</div><div class="stat-label">缺考班數</div></div></div>
+    <div class="filter-row"><button class="filter-btn fa" id="filter-all" onclick="setFilter('all')">全部</button><button class="filter-btn" id="filter-listen" onclick="setFilter('listen')">英聽</button><button class="filter-btn" id="filter-absence" onclick="setFilter('absence')">缺考</button></div>
+    <div class="action-row"><button class="btn btn-ghost" onclick="copyAll()">📋 複製全部</button><button class="btn btn-ghost" onclick="clearAllRecords()">🗑 清除全部</button></div>
+    <div id="records-container"><p class="empty-hint" style="text-align:center;padding:32px 0">尚無紀錄</p></div>
+    <div class="sync-bar"><span class="sync-dot ok" id="sync-dot-rec"></span><span id="sync-label-rec">就緒</span></div>
   </div>
 
   <div class="page" id="page-settings">
     <div class="card">
-      <div class="card-title">🔗 連線設定</div>
-      <div class="settings-item">
-        <div>
-          <div class="settings-label">連線狀態</div>
-          <div class="settings-sub" id="settings-url-display">—</div>
-        </div>
-        <span class="connected-badge" id="connected-badge">✓ 已連線</span>
-      </div>
-      <div class="settings-item">
-        <div><div class="settings-label">重新整理紀錄</div></div>
-        <button class="settings-btn" onclick="loadRecords()">重新載入</button>
-      </div>
+      <div class="card-title">🔗 連線狀態</div>
+      <div class="settings-item"><div><div class="settings-label">伺服器</div><div class="settings-sub" id="settings-url-display">—</div></div><span class="connected-badge">✓ 已連線</span></div>
+      <div class="settings-item"><div><div class="settings-label">重新整理紀錄</div></div><button class="settings-btn" onclick="loadRecords()">重新載入</button></div>
     </div>
     <div class="card">
       <div class="card-title">🔑 安全性</div>
-      <div class="settings-item">
-        <div>
-          <div class="settings-label">存取金鑰</div>
-          <div class="settings-sub">已加密儲存於此裝置</div>
-        </div>
-      </div>
-      <div class="settings-item" style="border-bottom:none">
-        <div><div class="settings-label">重新設定連線</div></div>
-        <button class="settings-btn" style="border-color:var(--red);color:var(--red)" onclick="resetSetup()">清除設定</button>
-      </div>
+      <div class="settings-item"><div><div class="settings-label">API 網址</div><div class="settings-sub">AES-256 加密儲存於程式碼中</div></div></div>
+      <div class="settings-item" style="border-bottom:none"><div><div class="settings-label">登出（鎖定）</div></div><button class="settings-btn" style="border-color:var(--red);color:var(--red)" onclick="lockApp()">登出</button></div>
     </div>
-    <div class="card">
-      <div class="card-title">ℹ️ 說明</div>
-      <p style="font-size:13px;color:var(--text-muted);line-height:1.7">
-        所有登錄資料即時寫入 Google 試算表，群組內所有人使用同一份 HTML，資料完全共用。API 網址和金鑰僅儲存在您的裝置中，不會出現在原始碼裡。
-      </p>
-    </div>
+    <div class="card"><div class="card-title">ℹ️ 說明</div><p style="font-size:13px;color:var(--text-muted);line-height:1.7">所有登錄資料即時寫入 Google 試算表。API 網址以 AES-256-GCM 加密儲存在程式碼中，必須輸入正確密碼才能解鎖使用。</p></div>
   </div>
 
   <div class="bottom-nav">
-    <div class="nav-item active" id="nav-entry"    onclick="switchPage('entry')">  <span class="nav-icon">✏️</span>登錄</div>
-    <div class="nav-item"        id="nav-records"  onclick="switchPage('records')"><span class="nav-icon">📄</span>紀錄<span class="badge" id="nav-badge" style="display:none">0</span></div>
-    <div class="nav-item"        id="nav-settings" onclick="switchPage('settings')"><span class="nav-icon">⚙️</span>設定</div>
+    <div class="nav-item active" id="nav-entry" onclick="switchPage('entry')"><span class="nav-icon">✏️</span>登錄</div>
+    <div class="nav-item" id="nav-records" onclick="switchPage('records')"><span class="nav-icon">📄</span>紀錄<span class="badge" id="nav-badge" style="display:none">0</span></div>
+    <div class="nav-item" id="nav-settings" onclick="switchPage('settings')"><span class="nav-icon">⚙️</span>設定</div>
   </div>
 </div>
 
 <div id="toast"></div>
 
 <script>
-/*
- * ══════════════════════════════════════════════════════
- *  全域錯誤攔截
- * ══════════════════════════════════════════════════════
- */
 window.onerror = function() { return true; };
 window.addEventListener('unhandledrejection', function(e) { e.preventDefault(); });
 
-/*
- * ══════════════════════════════════════════════════════
- *  日期顯示
- * ══════════════════════════════════════════════════════
- */
 var WD = ['日','一','二','三','四','五','六'];
-var now_init = new Date();
-document.getElementById('date-display').textContent =
-  now_init.getFullYear() + '.' + (now_init.getMonth()+1) + '.' + now_init.getDate() + ' (' + WD[now_init.getDay()] + ')';
+var ni = new Date();
+document.getElementById('date-display').textContent = ni.getFullYear()+'.'+(ni.getMonth()+1)+'.'+ni.getDate()+' ('+WD[ni.getDay()]+')';
 
 /*
  * ══════════════════════════════════════════════════════
- *  連線設定管理
- *  - API_URL 和 TOKEN 不寫在程式碼裡
- *  - 儲存在 localStorage（每台裝置獨立）
- *  - 首次開啟會顯示設定畫面
+ *  AES-256-GCM 加密/解密（Web Crypto API）
+ *
+ *  加密後的 URL 以 Base64 嵌入在程式碼中，
+ *  格式：salt(16) + iv(12) + tag(16) + ciphertext
+ *  使用 PBKDF2 從密碼衍生金鑰
+ * ══════════════════════════════════════════════════════
+ */
+var ENCRYPTED_DATA = 'JGHKepWRaBZbX1hGXhEhzj4wW1ixzBAcCaEZIHlM9NicfJaI+rEI72Mn238oSJ+aaVXHvA9BXbyyHMFisWhlOWZPpKJOe4MLq/R9VOk1XU0GN6+908wtIWtQtlO0Kq1DcAyg+LLD/BnpEondKsx+T9FEG/msyJsl/XK+iMoprtJxacD4IhWCN15mifKAD1ogy4eVvyC9fYdk9Coj';
+
+function b64ToUint8(b64) {
+  var bin = atob(b64);
+  var arr = new Uint8Array(bin.length);
+  for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return arr;
+}
+
+async function decryptURL(password) {
+  var raw = b64ToUint8(ENCRYPTED_DATA);
+  var salt = raw.slice(0, 16);
+  var iv   = raw.slice(16, 28);
+  var tag  = raw.slice(28, 44);
+  var ct   = raw.slice(44);
+
+  var combined = new Uint8Array(ct.length + 16);
+  combined.set(ct);
+  combined.set(tag, ct.length);
+
+  var keyMaterial = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']);
+  var key = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: salt, iterations: 100000, hash: 'SHA-256' },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['decrypt']
+  );
+
+  var decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, combined);
+  return new TextDecoder().decode(decrypted);
+}
+
+/*
+ * ══════════════════════════════════════════════════════
+ *  狀態管理
  * ══════════════════════════════════════════════════════
  */
 var API_URL = '';
 var API_TOKEN = '';
 
-function loadConfig() {
-  try {
-    API_URL   = localStorage.getItem('cls_api_url')   || '';
-    API_TOKEN = localStorage.getItem('cls_api_token') || '';
-  } catch(e) { /* localStorage 不可用 */ }
-  return API_URL && API_TOKEN;
+function loadSavedToken() {
+  try { API_TOKEN = localStorage.getItem('cls_token') || ''; } catch(e) {}
+  return !!API_TOKEN;
 }
 
-function saveConfig(url, token) {
-  try {
-    localStorage.setItem('cls_api_url',   url);
-    localStorage.setItem('cls_api_token', token);
-  } catch(e) {}
-  API_URL = url;
+function saveToken(token) {
+  try { localStorage.setItem('cls_token', token); } catch(e) {}
   API_TOKEN = token;
 }
 
-function clearConfig() {
-  try {
-    localStorage.removeItem('cls_api_url');
-    localStorage.removeItem('cls_api_token');
-  } catch(e) {}
-  API_URL = '';
+function clearToken() {
+  try { localStorage.removeItem('cls_token'); } catch(e) {}
   API_TOKEN = '';
-}
-
-/* 設定畫面 - 儲存連線 */
-function saveSetup() {
-  var url   = document.getElementById('setup-url').value.trim();
-  var token = document.getElementById('setup-token').value.trim();
-  var errEl = document.getElementById('setup-error');
-
-  if (!url || !url.startsWith('https://script.google.com/')) {
-    errEl.textContent = '⚠️ 請輸入有效的 Apps Script 網址';
-    errEl.style.display = 'block';
-    return;
-  }
-  if (!token || token.length < 6) {
-    errEl.textContent = '⚠️ 金鑰至少需要 6 個字元';
-    errEl.style.display = 'block';
-    return;
-  }
-
-  errEl.style.display = 'none';
-  saveConfig(url, token);
-
-  /* 測試連線 */
-  errEl.textContent = '⏳ 測試連線中...';
-  errEl.style.display = 'block';
-  errEl.style.background = 'var(--blue-dim)';
-  errEl.style.borderColor = 'rgba(88,166,255,.4)';
-  errEl.style.color = 'var(--blue)';
-
-  apiGet({ action: 'getAll' })
-    .then(function(data) {
-      if (data.error === 'unauthorized') {
-        throw new Error('金鑰錯誤');
-      }
-      enterApp();
-    })
-    .catch(function(e) {
-      errEl.style.background = 'var(--red-dim)';
-      errEl.style.borderColor = 'rgba(248,81,73,.4)';
-      errEl.style.color = 'var(--red)';
-      if (e.message === '金鑰錯誤') {
-        errEl.textContent = '❌ 金鑰驗證失敗，請確認 TOKEN 是否正確';
-      } else {
-        errEl.textContent = '❌ 連線失敗，請確認網址是否正確';
-      }
-      clearConfig();
-    });
-}
-
-/* 重新設定 */
-function resetSetup() {
-  if (!confirm('確定要清除連線設定？需要重新輸入網址和金鑰。')) return;
-  clearConfig();
-  document.getElementById('main-app').style.display = 'none';
-  document.getElementById('setup-screen').style.display = 'flex';
-  document.getElementById('setup-url').value = '';
-  document.getElementById('setup-token').value = '';
-  document.getElementById('setup-error').style.display = 'none';
-}
-
-/* 進入主程式 */
-function enterApp() {
-  document.getElementById('setup-screen').style.display = 'none';
-  document.getElementById('main-app').style.display = 'block';
-  /* 設定頁只顯示網址的前 40 字，不顯示完整 URL */
-  var masked = API_URL.substring(0, 40) + '...';
-  document.getElementById('settings-url-display').textContent = masked;
-  buildPicker();
-  loadRecords();
+  API_URL = '';
 }
 
 /*
  * ══════════════════════════════════════════════════════
- *  API 封裝（帶 TOKEN）
+ *  解鎖流程
+ * ══════════════════════════════════════════════════════
+ */
+async function unlockApp() {
+  var password = document.getElementById('setup-token').value.trim();
+  var errEl = document.getElementById('setup-error');
+
+  if (!password || password.length < 4) {
+    showSetupError('⚠️ 請輸入至少 4 個字元的密碼');
+    return;
+  }
+
+  showSetupInfo('⏳ 驗證中...');
+
+  try {
+    var url = await decryptURL(password);
+    if (!url.startsWith('https://')) throw new Error('bad');
+    API_URL = url;
+    API_TOKEN = password;
+
+    var data = await apiGet({ action: 'getAll' });
+    if (data.error === 'unauthorized') throw new Error('token');
+
+    saveToken(password);
+    enterApp();
+  } catch(e) {
+    if (e.message === 'token') {
+      showSetupError('❌ 密碼可以解密但伺服器拒絕存取，請確認密碼');
+    } else {
+      showSetupError('❌ 密碼錯誤，無法解鎖');
+    }
+    API_URL = ''; API_TOKEN = '';
+  }
+}
+
+async function tryAutoUnlock(token) {
+  try {
+    var url = await decryptURL(token);
+    if (!url.startsWith('https://')) return false;
+    API_URL = url;
+    API_TOKEN = token;
+    return true;
+  } catch(e) { return false; }
+}
+
+function lockApp() {
+  if (!confirm('確定要登出？需要重新輸入密碼。')) return;
+  clearToken();
+  document.getElementById('main-app').style.display = 'none';
+  document.getElementById('setup-screen').style.display = 'flex';
+  document.getElementById('setup-token').value = '';
+  document.getElementById('setup-error').style.display = 'none';
+}
+
+function enterApp() {
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('main-app').style.display = 'block';
+  document.getElementById('settings-url-display').textContent = 'script.google.com/...（已加密）';
+  buildPicker();
+  loadRecords();
+}
+
+function showSetupError(msg) {
+  var el = document.getElementById('setup-error');
+  el.textContent = msg; el.style.display = 'block';
+  el.style.background = 'var(--red-dim)'; el.style.borderColor = 'rgba(248,81,73,.4)'; el.style.color = 'var(--red)';
+}
+function showSetupInfo(msg) {
+  var el = document.getElementById('setup-error');
+  el.textContent = msg; el.style.display = 'block';
+  el.style.background = 'var(--blue-dim)'; el.style.borderColor = 'rgba(88,166,255,.4)'; el.style.color = 'var(--blue)';
+}
+
+/*
+ * ══════════════════════════════════════════════════════
+ *  API 封裝
  * ══════════════════════════════════════════════════════
  */
 function apiGet(params) {
   params.token = API_TOKEN;
   var url = API_URL + '?' + new URLSearchParams(params).toString();
-  return fetch(url, { redirect: 'follow' })
-    .then(function(res) { return res.text(); })
-    .then(function(text) { return JSON.parse(text); });
+  return fetch(url, { redirect: 'follow' }).then(function(r){return r.text()}).then(function(t){return JSON.parse(t)});
 }
-
 function apiPost(payload) {
   payload.token = API_TOKEN;
-  return fetch(API_URL, {
-    method: 'POST',
-    redirect: 'follow',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(payload)
-  })
-  .then(function(res) { return res.text(); })
-  .then(function(text) { return JSON.parse(text); });
+  return fetch(API_URL, { method:'POST', redirect:'follow', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(payload) }).then(function(r){return r.text()}).then(function(t){return JSON.parse(t)});
 }
 
 /*
  * ══════════════════════════════════════════════════════
- *  工具函式
+ *  工具
  * ══════════════════════════════════════════════════════
  */
-function escapeHtml(s) {
-  if (!s) return '';
-  var d = document.createElement('div');
-  d.textContent = s;
-  return d.innerHTML;
-}
-
+function escapeHtml(s){if(!s)return '';var d=document.createElement('div');d.textContent=s;return d.innerHTML}
 var toastTimer;
-function showToast(msg) {
-  var el = document.getElementById('toast');
-  if (!el) return;
-  el.textContent = msg;
-  el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(function() { el.classList.remove('show'); }, 2400);
-}
+function showToast(m){var e=document.getElementById('toast');if(!e)return;e.textContent=m;e.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){e.classList.remove('show')},2400)}
+function setSyncState(p,s,l){var d=document.getElementById('sync-dot-'+p);var b=document.getElementById('sync-label-'+p);if(d)d.className='sync-dot '+s;if(b)b.textContent=l}
 
-function setSyncState(page, state, label) {
-  var dot = document.getElementById('sync-dot-' + page);
-  var lbl = document.getElementById('sync-label-' + page);
-  if (dot) dot.className = 'sync-dot ' + state;
-  if (lbl) lbl.textContent = label;
-}
+function switchPage(n){document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});document.querySelectorAll('.nav-item').forEach(function(i){i.classList.remove('active')});document.getElementById('page-'+n).classList.add('active');document.getElementById('nav-'+n).classList.add('active');if(n==='records')loadRecords()}
 
-/*
- * ══════════════════════════════════════════════════════
- *  頁面切換
- * ══════════════════════════════════════════════════════
- */
-function switchPage(name) {
-  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
-  document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
-  document.getElementById('page-' + name).classList.add('active');
-  document.getElementById('nav-' + name).classList.add('active');
-  if (name === 'records') loadRecords();
-}
+var currentTask='';
+function selectTask(t){currentTask=t;document.getElementById('task-listen').className='task-card'+(t==='listen'?' sel-listen':'');document.getElementById('task-absence').className='task-card'+(t==='absence'?' sel-absence':'');document.getElementById('class-card').style.display='block';document.getElementById('listen-section').style.display=t==='listen'?'block':'none';document.getElementById('absence-section').style.display=t==='absence'?'block':'none';if(t==='listen'){listenStatus='';resetListenUI()}}
 
-/*
- * ══════════════════════════════════════════════════════
- *  任務選擇
- * ══════════════════════════════════════════════════════
- */
-var currentTask = '';
-function selectTask(task) {
-  currentTask = task;
-  document.getElementById('task-listen').className  = 'task-card' + (task === 'listen'  ? ' sel-listen'  : '');
-  document.getElementById('task-absence').className = 'task-card' + (task === 'absence' ? ' sel-absence' : '');
-  document.getElementById('class-card').style.display = 'block';
-  document.getElementById('listen-section').style.display  = task === 'listen'  ? 'block' : 'none';
-  document.getElementById('absence-section').style.display = task === 'absence' ? 'block' : 'none';
-  if (task === 'listen') { listenStatus = ''; resetListenUI(); }
-}
+function updateClassOpts(){var s=document.getElementById('sel-school').value;var sel=document.getElementById('sel-class');if(!s){sel.innerHTML='<option value="">請先選擇年段</option>';return}var o='<option value="">請選擇班級</option>';if(s==='高中部')['甲','乙','丙','丁','戊','己','庚'].forEach(function(c){o+='<option value="'+c+'">'+c+'班</option>'});else for(var i=1;i<=10;i++)o+='<option value="'+i+'">'+i+'班</option>';sel.innerHTML=o}
 
-function updateClassOpts() {
-  var s = document.getElementById('sel-school').value;
-  var sel = document.getElementById('sel-class');
-  if (!s) { sel.innerHTML = '<option value="">請先選擇年段</option>'; return; }
-  var opts = '<option value="">請選擇班級</option>';
-  if (s === '高中部') {
-    ['甲','乙','丙','丁','戊','己','庚'].forEach(function(c) {
-      opts += '<option value="' + c + '">' + c + '班</option>';
-    });
-  } else {
-    for (var i = 1; i <= 10; i++) opts += '<option value="' + i + '">' + i + '班</option>';
-  }
-  sel.innerHTML = opts;
-}
+var listenStatus='';
+function selectListenStatus(s){listenStatus=s;document.getElementById('btn-normal').className='status-btn'+(s==='normal'?' sel-normal':'');document.getElementById('btn-abnormal').className='status-btn'+(s==='abnormal'?' sel-abnormal':'');document.getElementById('note-wrap').className='note-wrap'+(s==='abnormal'?' show':'');if(s==='normal')document.getElementById('listen-note').value=''}
+function resetListenUI(){document.getElementById('btn-normal').className='status-btn';document.getElementById('btn-abnormal').className='status-btn';document.getElementById('note-wrap').className='note-wrap';document.getElementById('listen-note').value=''}
 
-/*
- * ══════════════════════════════════════════════════════
- *  英聽狀態
- * ══════════════════════════════════════════════════════
- */
-var listenStatus = '';
-function selectListenStatus(s) {
-  listenStatus = s;
-  document.getElementById('btn-normal').className   = 'status-btn' + (s === 'normal'   ? ' sel-normal'   : '');
-  document.getElementById('btn-abnormal').className = 'status-btn' + (s === 'abnormal' ? ' sel-abnormal' : '');
-  document.getElementById('note-wrap').className    = 'note-wrap'  + (s === 'abnormal' ? ' show' : '');
-  if (s === 'normal') document.getElementById('listen-note').value = '';
-}
-function resetListenUI() {
-  document.getElementById('btn-normal').className   = 'status-btn';
-  document.getElementById('btn-abnormal').className = 'status-btn';
-  document.getElementById('note-wrap').className    = 'note-wrap';
-  document.getElementById('listen-note').value = '';
-}
+var MAX_SEAT=45,currentSeats=new Set(),allPresent=false;
+function buildPicker(){var p=document.getElementById('seat-picker');p.innerHTML='';for(var i=1;i<=MAX_SEAT;i++){var b=document.createElement('button');b.className='seat-btn';b.textContent=i;b.dataset.seat=i;b.onclick=(function(n){return function(){toggleSeat(n)}})(i);p.appendChild(b)}}
+function toggleSeat(n){allPresent=false;document.getElementById('all-present-notice').style.display='none';document.getElementById('present-btn').classList.remove('active');if(currentSeats.has(n))currentSeats.delete(n);else currentSeats.add(n);syncPickerUI();renderSummary()}
+function syncPickerUI(){document.querySelectorAll('.seat-btn').forEach(function(b){b.classList.toggle('selected',currentSeats.has(parseInt(b.dataset.seat)))})}
+function toggleAllPresent(){allPresent=!allPresent;if(allPresent){currentSeats.clear();syncPickerUI();renderSummary();document.getElementById('all-present-notice').style.display='block';document.getElementById('present-btn').classList.add('active');showToast('全班到齊，可直接提交')}else{document.getElementById('all-present-notice').style.display='none';document.getElementById('present-btn').classList.remove('active')}}
+function manualAdd(){allPresent=false;document.getElementById('all-present-notice').style.display='none';document.getElementById('present-btn').classList.remove('active');var parts=document.getElementById('seat-input').value.split(/[\s,，、\/]+/).filter(Boolean);var added=0;parts.forEach(function(p){var n=parseInt(p);if(!isNaN(n)&&n>0&&n<=99&&!currentSeats.has(n)){currentSeats.add(n);if(n>MAX_SEAT){var pk=document.getElementById('seat-picker');if(!pk.querySelector('[data-seat="'+n+'"]')){var b=document.createElement('button');b.className='seat-btn selected';b.textContent=n;b.dataset.seat=n;b.onclick=(function(num){return function(){toggleSeat(num)}})(n);pk.appendChild(b)}}added++}});document.getElementById('seat-input').value='';syncPickerUI();renderSummary();showToast(added?'✅ 已加入 '+added+' 個座號':'⚠️ 未新增（重複或格式錯誤）')}
+document.getElementById('seat-input').addEventListener('keydown',function(e){if(e.key==='Enter')manualAdd()});
+function renderSummary(){var sorted=Array.from(currentSeats).sort(function(a,b){return a-b});document.getElementById('chips-count').textContent=sorted.length;var card=document.getElementById('summary-card');if(!sorted.length){card.style.display='none';return}card.style.display='block';document.getElementById('seat-summary').innerHTML=sorted.map(function(n){return '<div class="seat-chip">'+String(n).padStart(2,'0')+'<button class="chip-del" onclick="removeSeat('+n+')">×</button></div>'}).join('')}
+function removeSeat(n){currentSeats.delete(n);syncPickerUI();renderSummary()}
+function clearSeats(){currentSeats.clear();allPresent=false;document.getElementById('all-present-notice').style.display='none';document.getElementById('present-btn').classList.remove('active');document.querySelectorAll('.seat-btn').forEach(function(b){if(parseInt(b.dataset.seat)>MAX_SEAT)b.remove()});syncPickerUI();renderSummary();showToast('已清除所有座號')}
 
-/*
- * ══════════════════════════════════════════════════════
- *  座號選取
- * ══════════════════════════════════════════════════════
- */
-var MAX_SEAT = 45;
-var currentSeats = new Set();
-var allPresent = false;
+function submitRecord(){var school=document.getElementById('sel-school').value;var g=document.getElementById('sel-grade').value;var c=document.getElementById('sel-class').value;if(!currentTask){showToast('⚠️ 請先選擇任務');return}if(!school||!g||!c){showToast('⚠️ 請選擇年段、年級和班級');return}if(currentTask==='listen'){if(!listenStatus){showToast('⚠️ 請選擇正常或異常');return}if(listenStatus==='abnormal'&&!document.getElementById('listen-note').value.trim()){showToast('⚠️ 請填寫異常說明');return}}if(currentTask==='absence'&&!allPresent&&currentSeats.size===0){showToast('⚠️ 請選擇座號，或點「全班到齊」');return}var now=new Date();var rec={id:Date.now(),taskType:currentTask,className:school+g+'年'+c+'班',seats:currentTask==='absence'?Array.from(currentSeats).sort(function(a,b){return a-b}):[],allPresent:currentTask==='absence'?allPresent:false,listenStatus:currentTask==='listen'?listenStatus:'',listenNote:currentTask==='listen'?document.getElementById('listen-note').value.trim():'',date:(now.getMonth()+1)+'/'+now.getDate(),time:String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0')};setSyncState('entry','loading','儲存中...');apiPost({action:'add',record:rec}).then(function(data){if(data.error==='unauthorized')throw new Error('unauthorized');if(!data.ok)throw new Error('not ok');setSyncState('entry','ok','已同步到試算表');showToast('🎉 '+rec.className+' 登錄完成！');if(currentTask==='absence')clearSeats();if(currentTask==='listen'){listenStatus='';resetListenUI()}return loadRecords()}).catch(function(e){if(e.message==='unauthorized'){setSyncState('entry','error','金鑰驗證失敗');showToast('❌ 金鑰錯誤')}else{setSyncState('entry','error','儲存失敗');showToast('❌ 儲存失敗，請確認連線')}})}
 
-function buildPicker() {
-  var p = document.getElementById('seat-picker');
-  p.innerHTML = '';
-  for (var i = 1; i <= MAX_SEAT; i++) {
-    var b = document.createElement('button');
-    b.className = 'seat-btn';
-    b.textContent = i;
-    b.dataset.seat = i;
-    b.onclick = (function(num) { return function() { toggleSeat(num); }; })(i);
-    p.appendChild(b);
-  }
-}
+var records=[],currentFilter='all';
+function loadRecords(){setSyncState('rec','loading','載入中...');return apiGet({action:'getAll'}).then(function(data){if(data.error==='unauthorized')throw new Error('unauthorized');records=data.records||[];renderRecords();updateBadge();setSyncState('rec','ok','已更新，共 '+records.length+' 筆')}).catch(function(e){if(e.message==='unauthorized')setSyncState('rec','error','金鑰驗證失敗');else setSyncState('rec','error','載入失敗')})}
+function setFilter(f){currentFilter=f;document.querySelectorAll('.filter-btn').forEach(function(b){b.className='filter-btn'});var cls={all:'fa',listen:'fl',absence:'fx'};document.getElementById('filter-'+f).classList.add(cls[f]);renderRecords()}
 
-function toggleSeat(n) {
-  allPresent = false;
-  document.getElementById('all-present-notice').style.display = 'none';
-  document.getElementById('present-btn').classList.remove('active');
-  if (currentSeats.has(n)) currentSeats.delete(n); else currentSeats.add(n);
-  syncPickerUI();
-  renderSummary();
-}
+function renderRecords(){document.getElementById('stat-total').textContent=records.length;document.getElementById('stat-listen').textContent=records.filter(function(r){return r.taskType==='listen'}).length;document.getElementById('stat-absence').textContent=records.filter(function(r){return r.taskType==='absence'}).length;var list=currentFilter==='all'?records:records.filter(function(r){return r.taskType===currentFilter});var ct=document.getElementById('records-container');if(!list.length){ct.innerHTML='<p class="empty-hint" style="text-align:center;padding:32px 0">尚無紀錄</p>';return}ct.innerHTML=list.map(function(r){var isL=r.taskType==='listen';var tag='<span class="rec-tag '+(isL?'tl':'ta')+'">'+(isL?'英聽':'缺考')+'</span>';var body='';if(isL){body=r.listenStatus==='normal'?'<div class="listen-ok">✓ 設備正常</div>':'<div class="listen-err">✗ 設備異常</div>'+(r.listenNote?'<div class="listen-note-text">'+escapeHtml(r.listenNote)+'</div>':'')}else{body='<div class="rec-seats">'+(r.seats.length===0?'<span style="color:var(--green);font-size:13px;font-weight:700">✓ 全班到齊</span>':r.seats.map(function(s){return '<span class="mini-chip">'+String(s).padStart(2,'0')+'</span>'}).join(''))+'</div>'}var count=isL?(r.listenStatus==='normal'?'設備正常':'設備異常'):(r.seats.length===0?'無人缺考':'缺考 '+r.seats.length+' 人');return '<div class="record-item"><div class="rec-header"><span class="rec-class">'+tag+escapeHtml(r.className)+'</span><span class="rec-time">'+escapeHtml(r.date+' '+r.time)+'</span></div><div class="rec-body">'+body+'</div><div class="rec-footer"><span class="rec-count">'+count+'</span><div class="rec-btns"><button class="rec-btn copy" onclick="copyRecord('+r.id+')">複製</button><button class="rec-btn del" onclick="deleteRecord('+r.id+')">刪除</button></div></div></div>'}).join('')}
 
-function syncPickerUI() {
-  document.querySelectorAll('.seat-btn').forEach(function(b) {
-    b.classList.toggle('selected', currentSeats.has(parseInt(b.dataset.seat)));
-  });
-}
-
-function toggleAllPresent() {
-  allPresent = !allPresent;
-  if (allPresent) {
-    currentSeats.clear(); syncPickerUI(); renderSummary();
-    document.getElementById('all-present-notice').style.display = 'block';
-    document.getElementById('present-btn').classList.add('active');
-    showToast('全班到齊，可直接提交');
-  } else {
-    document.getElementById('all-present-notice').style.display = 'none';
-    document.getElementById('present-btn').classList.remove('active');
-  }
-}
-
-function manualAdd() {
-  allPresent = false;
-  document.getElementById('all-present-notice').style.display = 'none';
-  document.getElementById('present-btn').classList.remove('active');
-  var parts = document.getElementById('seat-input').value.split(/[\s,，、\/]+/).filter(Boolean);
-  var added = 0;
-  parts.forEach(function(p) {
-    var n = parseInt(p);
-    if (!isNaN(n) && n > 0 && n <= 99 && !currentSeats.has(n)) {
-      currentSeats.add(n);
-      if (n > MAX_SEAT) {
-        var picker = document.getElementById('seat-picker');
-        if (!picker.querySelector('[data-seat="' + n + '"]')) {
-          var b = document.createElement('button');
-          b.className = 'seat-btn selected'; b.textContent = n; b.dataset.seat = n;
-          b.onclick = (function(num) { return function() { toggleSeat(num); }; })(n);
-          picker.appendChild(b);
-        }
-      }
-      added++;
-    }
-  });
-  document.getElementById('seat-input').value = '';
-  syncPickerUI(); renderSummary();
-  showToast(added ? '✅ 已加入 ' + added + ' 個座號' : '⚠️ 未新增（重複或格式錯誤）');
-}
-
-document.getElementById('seat-input').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') manualAdd();
-});
-
-function renderSummary() {
-  var sorted = Array.from(currentSeats).sort(function(a,b) { return a - b; });
-  document.getElementById('chips-count').textContent = sorted.length;
-  var card = document.getElementById('summary-card');
-  if (!sorted.length) { card.style.display = 'none'; return; }
-  card.style.display = 'block';
-  document.getElementById('seat-summary').innerHTML = sorted.map(function(n) {
-    return '<div class="seat-chip">' + String(n).padStart(2,'0') + '<button class="chip-del" onclick="removeSeat(' + n + ')">×</button></div>';
-  }).join('');
-}
-
-function removeSeat(n) { currentSeats.delete(n); syncPickerUI(); renderSummary(); }
-
-function clearSeats() {
-  currentSeats.clear(); allPresent = false;
-  document.getElementById('all-present-notice').style.display = 'none';
-  document.getElementById('present-btn').classList.remove('active');
-  document.querySelectorAll('.seat-btn').forEach(function(b) { if (parseInt(b.dataset.seat) > MAX_SEAT) b.remove(); });
-  syncPickerUI(); renderSummary();
-  showToast('已清除所有座號');
-}
-
-/*
- * ══════════════════════════════════════════════════════
- *  提交紀錄
- * ══════════════════════════════════════════════════════
- */
-function submitRecord() {
-  var school = document.getElementById('sel-school').value;
-  var g      = document.getElementById('sel-grade').value;
-  var c      = document.getElementById('sel-class').value;
-  if (!currentTask)        { showToast('⚠️ 請先選擇任務'); return; }
-  if (!school || !g || !c) { showToast('⚠️ 請選擇年段、年級和班級'); return; }
-  if (currentTask === 'listen') {
-    if (!listenStatus) { showToast('⚠️ 請選擇正常或異常'); return; }
-    if (listenStatus === 'abnormal' && !document.getElementById('listen-note').value.trim()) { showToast('⚠️ 請填寫異常說明'); return; }
-  }
-  if (currentTask === 'absence' && !allPresent && currentSeats.size === 0) { showToast('⚠️ 請選擇座號，或點「全班到齊」'); return; }
-
-  var now = new Date();
-  var rec = {
-    id: Date.now(),
-    taskType:     currentTask,
-    className:    school + g + '年' + c + '班',
-    seats:        currentTask === 'absence' ? Array.from(currentSeats).sort(function(a,b){return a-b}) : [],
-    allPresent:   currentTask === 'absence' ? allPresent : false,
-    listenStatus: currentTask === 'listen'  ? listenStatus : '',
-    listenNote:   currentTask === 'listen'  ? document.getElementById('listen-note').value.trim() : '',
-    date: (now.getMonth()+1) + '/' + now.getDate(),
-    time: String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0')
-  };
-
-  setSyncState('entry', 'loading', '儲存中...');
-  apiPost({ action: 'add', record: rec })
-    .then(function(data) {
-      if (data.error === 'unauthorized') throw new Error('unauthorized');
-      if (!data.ok) throw new Error('not ok');
-      setSyncState('entry', 'ok', '已同步到試算表');
-      showToast('🎉 ' + rec.className + ' 登錄完成！');
-      if (currentTask === 'absence') clearSeats();
-      if (currentTask === 'listen')  { listenStatus = ''; resetListenUI(); }
-      return loadRecords();
-    })
-    .catch(function(e) {
-      if (e.message === 'unauthorized') {
-        setSyncState('entry', 'error', '金鑰驗證失敗');
-        showToast('❌ 金鑰錯誤，請到設定頁重新設定');
-      } else {
-        setSyncState('entry', 'error', '儲存失敗，請重試');
-        showToast('❌ 儲存失敗，請確認連線');
-      }
-    });
-}
-
-/*
- * ══════════════════════════════════════════════════════
- *  紀錄管理
- * ══════════════════════════════════════════════════════
- */
-var records = [];
-var currentFilter = 'all';
-
-function loadRecords() {
-  setSyncState('rec', 'loading', '載入中...');
-  return apiGet({ action: 'getAll' })
-    .then(function(data) {
-      if (data.error === 'unauthorized') throw new Error('unauthorized');
-      records = data.records || [];
-      renderRecords(); updateBadge();
-      setSyncState('rec', 'ok', '已更新，共 ' + records.length + ' 筆');
-    })
-    .catch(function(e) {
-      if (e.message === 'unauthorized') {
-        setSyncState('rec', 'error', '金鑰驗證失敗');
-      } else {
-        setSyncState('rec', 'error', '載入失敗');
-      }
-    });
-}
-
-function setFilter(f) {
-  currentFilter = f;
-  document.querySelectorAll('.filter-btn').forEach(function(b) { b.className = 'filter-btn'; });
-  var cls = { all:'fa', listen:'fl', absence:'fx' };
-  document.getElementById('filter-' + f).classList.add(cls[f]);
-  renderRecords();
-}
-
-function renderRecords() {
-  document.getElementById('stat-total').textContent   = records.length;
-  document.getElementById('stat-listen').textContent  = records.filter(function(r) { return r.taskType === 'listen'; }).length;
-  document.getElementById('stat-absence').textContent = records.filter(function(r) { return r.taskType === 'absence'; }).length;
-  var list = currentFilter === 'all' ? records : records.filter(function(r) { return r.taskType === currentFilter; });
-  var container = document.getElementById('records-container');
-  if (!list.length) { container.innerHTML = '<p class="empty-hint" style="text-align:center;padding:32px 0">尚無紀錄</p>'; return; }
-  container.innerHTML = list.map(function(r) {
-    var isL = r.taskType === 'listen';
-    var tag = '<span class="rec-tag ' + (isL ? 'tl' : 'ta') + '">' + (isL ? '英聽' : '缺考') + '</span>';
-    var body = '';
-    if (isL) {
-      body = r.listenStatus === 'normal'
-        ? '<div class="listen-ok">✓ 設備正常</div>'
-        : '<div class="listen-err">✗ 設備異常</div>' + (r.listenNote ? '<div class="listen-note-text">' + escapeHtml(r.listenNote) + '</div>' : '');
-    } else {
-      body = '<div class="rec-seats">' + (r.seats.length === 0
-        ? '<span style="color:var(--green);font-size:13px;font-weight:700">✓ 全班到齊</span>'
-        : r.seats.map(function(s) { return '<span class="mini-chip">' + String(s).padStart(2,'0') + '</span>'; }).join('')
-      ) + '</div>';
-    }
-    var count = isL
-      ? (r.listenStatus === 'normal' ? '設備正常' : '設備異常')
-      : (r.seats.length === 0 ? '無人缺考' : '缺考 ' + r.seats.length + ' 人');
-    return '<div class="record-item">'
-      + '<div class="rec-header"><span class="rec-class">' + tag + escapeHtml(r.className) + '</span><span class="rec-time">' + escapeHtml(r.date + ' ' + r.time) + '</span></div>'
-      + '<div class="rec-body">' + body + '</div>'
-      + '<div class="rec-footer">'
-      + '<span class="rec-count">' + count + '</span>'
-      + '<div class="rec-btns">'
-      + '<button class="rec-btn copy" onclick="copyRecord(' + r.id + ')">複製</button>'
-      + '<button class="rec-btn del"  onclick="deleteRecord(' + r.id + ')">刪除</button>'
-      + '</div></div></div>';
-  }).join('');
-}
-
-function deleteRecord(id) {
-  setSyncState('rec', 'loading', '刪除中...');
-  apiPost({ action: 'delete', id: id })
-    .then(function() { showToast('已刪除'); return loadRecords(); })
-    .catch(function() { showToast('❌ 刪除失敗'); });
-}
-
-function clearAllRecords() {
-  if (!records.length) { showToast('沒有紀錄可清除'); return; }
-  if (!confirm('確定要清除全部 ' + records.length + ' 筆紀錄？')) return;
-  setSyncState('rec', 'loading', '清除中...');
-  apiPost({ action: 'clear' })
-    .then(function() { showToast('已清除全部紀錄'); return loadRecords(); })
-    .catch(function() { showToast('❌ 清除失敗'); });
-}
-
-function copyRecord(id) {
-  var r = records.find(function(x) { return x.id == id; });
-  if (!r) return;
-  var t = '【' + (r.taskType === 'listen' ? '英聽測試' : '缺考登錄') + '】\n班級：' + r.className + '\n';
-  if (r.taskType === 'listen') {
-    t += '設備狀態：' + (r.listenStatus === 'normal' ? '正常' : '異常');
-    if (r.listenNote) t += '\n異常說明：' + r.listenNote;
-  } else {
-    var seats = r.seats.length === 0
-      ? '無（全班到齊）'
-      : r.seats.map(function(s) { return String(s).padStart(2,'0'); }).join('、');
-    t += '缺考座號：' + seats + '\n缺考人數：' + r.seats.length + ' 人';
-  }
-  copyText(t + '\n時間：' + r.date + ' ' + r.time);
-}
-
-function copyAll() {
-  if (!records.length) { showToast('沒有紀錄可複製'); return; }
-  var d = (new Date().getMonth()+1) + '/' + new Date().getDate();
-  var lines = ['📋 登錄紀錄彙整（' + d + '）\n' + '─'.repeat(18)];
-  records.forEach(function(r, i) {
-    var detail = r.taskType === 'listen'
-      ? (r.listenStatus === 'normal' ? '設備正常' : '設備異常：' + (r.listenNote || '（無說明）'))
-      : (r.seats.length === 0 ? '全班到齊（無人缺考）' : '缺考：' + r.seats.map(function(s){return String(s).padStart(2,'0')}).join('、') + '（共' + r.seats.length + '人）');
-    lines.push((i+1) + '. [' + (r.taskType === 'listen' ? '英聽' : '缺考') + '] ' + r.className + '\n   ' + detail);
-  });
-  copyText(lines.join('\n'));
-}
-
-function copyText(t) {
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(t).then(function() { showToast('✅ 已複製到剪貼簿'); }).catch(function() {});
-  } else {
-    var ta = document.createElement('textarea');
-    ta.value = t; ta.style.cssText = 'position:fixed;opacity:0';
-    document.body.appendChild(ta); ta.select();
-    document.execCommand('copy'); document.body.removeChild(ta);
-    showToast('✅ 已複製到剪貼簿');
-  }
-}
-
-function updateBadge() {
-  var b = document.getElementById('nav-badge');
-  if (!b) return;
-  if (!records.length) { b.style.display = 'none'; return; }
-  b.style.display = 'inline-flex';
-  b.textContent = records.length;
-}
+function deleteRecord(id){setSyncState('rec','loading','刪除中...');apiPost({action:'delete',id:id}).then(function(){showToast('已刪除');return loadRecords()}).catch(function(){showToast('❌ 刪除失敗')})}
+function clearAllRecords(){if(!records.length){showToast('沒有紀錄可清除');return}if(!confirm('確定要清除全部 '+records.length+' 筆紀錄？'))return;setSyncState('rec','loading','清除中...');apiPost({action:'clear'}).then(function(){showToast('已清除全部紀錄');return loadRecords()}).catch(function(){showToast('❌ 清除失敗')})}
+function copyRecord(id){var r=records.find(function(x){return x.id==id});if(!r)return;var t='【'+(r.taskType==='listen'?'英聽測試':'缺考登錄')+'】\n班級：'+r.className+'\n';if(r.taskType==='listen'){t+='設備狀態：'+(r.listenStatus==='normal'?'正常':'異常');if(r.listenNote)t+='\n異常說明：'+r.listenNote}else{var s=r.seats.length===0?'無（全班到齊）':r.seats.map(function(s){return String(s).padStart(2,'0')}).join('、');t+='缺考座號：'+s+'\n缺考人數：'+r.seats.length+' 人'}copyText(t+'\n時間：'+r.date+' '+r.time)}
+function copyAll(){if(!records.length){showToast('沒有紀錄可複製');return}var d=(new Date().getMonth()+1)+'/'+new Date().getDate();var lines=['📋 登錄紀錄彙整（'+d+'）\n'+'─'.repeat(18)];records.forEach(function(r,i){var detail=r.taskType==='listen'?(r.listenStatus==='normal'?'設備正常':'設備異常：'+(r.listenNote||'（無說明）')):(r.seats.length===0?'全班到齊（無人缺考）':'缺考：'+r.seats.map(function(s){return String(s).padStart(2,'0')}).join('、')+'（共'+r.seats.length+'人）');lines.push((i+1)+'. ['+(r.taskType==='listen'?'英聽':'缺考')+'] '+r.className+'\n   '+detail)});copyText(lines.join('\n'))}
+function copyText(t){if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){showToast('✅ 已複製到剪貼簿')}).catch(function(){})}else{var ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('✅ 已複製到剪貼簿')}}
+function updateBadge(){var b=document.getElementById('nav-badge');if(!b)return;if(!records.length){b.style.display='none';return}b.style.display='inline-flex';b.textContent=records.length}
 
 /*
  * ══════════════════════════════════════════════════════
  *  啟動
  * ══════════════════════════════════════════════════════
  */
-if (loadConfig()) {
-  enterApp();
-} else {
+(async function init() {
+  if (loadSavedToken()) {
+    var ok = await tryAutoUnlock(API_TOKEN);
+    if (ok) { enterApp(); return; }
+  }
   document.getElementById('setup-screen').style.display = 'flex';
-}
+  document.getElementById('setup-token').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') unlockApp();
+  });
+})();
 </script>
 </body>
 </html>
