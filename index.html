@@ -376,17 +376,6 @@ const WD = ['日','一','二','三','四','五','六'];
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbwzSbn-0MQ4RQ0HferrWJOWKwjU43cVA3AGeMF59tZVCRNW0xD0KLMlxmFpzeM1NznA/exec';
 
-  const btn = document.getElementById('connect-btn');
-  btn.disabled = true; btn.textContent = '連線測試中...';
-  fetch(url + '?action=getAll')
-    .then(r => r.json())
-    .then(d => {
-      if (d.records !== undefined) { API_URL = url; localStorage.setItem('gas_url', url); initApp(); showToast('✅ 連線成功！'); }
-      else throw new Error();
-    })
-    .catch(() => { btn.disabled = false; btn.textContent = '連線並開始使用'; showToast('❌ 連線失敗，請確認網址'); });
-}
-
 
 function initApp() {
   document.getElementById('setup-screen').style.display = 'none';
