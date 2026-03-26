@@ -334,10 +334,10 @@ var isAdmin = false;
 // ==========================================
 
 // API 網址密文（用一般使用者密碼加密）
-var ENCRYPTED_DATA = 'drVjOcJXFborCgZAQcLooWYEFQCshR5MC2RVmswUxhuqcpvPSnJz0Kb9MphsDXzUjanWx/CsdIhm2HDGt8vflw3CZJSwh1KeF3zn9BUJnzKSx9aMO4WzxTcwFR468lXlC4JOQMhdzlYki9fGQmxTQWZyB5+pODhQ4LCT66dgajj6kiZUvsLpmNjvE7c69+DHQZJCgcrVKTNvF/Dj';
+var ENCRYPTED_DATA = 'NiUBfksevmQKHqsMtcEGoLC4WoSgifmlz/M51JVWta0YdVV1OXRhWXHbU+bzfvq2xzxIH4NiMjdH91JUNzAXl0ZR2T4HF7VcCxWMYI0l9ENGzKRYDNkdFP2F9xkdEzB7lR++uo5A6WfBPW0H089NB5f+puzQ4AXwtFfHAKUfz3DsawE3dXht2DlrxZ9DlJgzis7Ajh/cIfN4LjyQ';
 
 // 管理員驗證密文（用管理員密碼加密，內含一般密碼）
-var ENCRYPTED_ADMIN = 'vuNZRgD1LpK/tEmoyObR3nTMBJRkniY13Zken/zG/gMlyl8r49HR6R8QluIRxfQ19dMubpS7L1Owr676E2r9';
+var ENCRYPTED_ADMIN = 'hfebkX1MOrrKykiAh3Kpr8CrM2uYg8Yx3ZEsG+Yebf/a9YzjcIVzdMkqXxF/EQCvz07qIH/0we/wvghdnm44';
 
 function b64ToUint8(b64) {
   var bin = atob(b64);
@@ -801,43 +801,29 @@ function sortRecordsForExport(list) {
 
 function exportReport() {
   if (!isAdmin) { showToast('權限不足'); return; }
+  if (currentFilter === 'all') { showToast('⚠️ 請先選擇「英聽」或「缺考」再匯出'); return; }
   var list = getFilteredRecords();
   if (!list.length) { showToast('沒有紀錄可匯出'); return; }
 
   var sorted = sortRecordsForExport(list);
-  var csvContent = "\uFEFF";
   var rows = [];
 
   if (currentFilter === 'listen') {
-    rows.push(['日期', '時間', '年段', '年級', '班級', '設備狀況']);
+    rows.push(['日期', '年段', '年級', '班級', '設備狀況']);
     sorted.forEach(function(r) {
       var match = r.className.match(/(.+部)(.+?)年(.+)班/);
       var s = match ? match[1] : ''; var g = match ? match[2] : ''; var c = match ? match[3] : '';
-      var status = (r.listenStatus === 'normal' ? '正常' : '異常');
-      rows.push([formatDateDisplay(r.date), r.time || '', s, g, c, status]);
-    });
-  } else if (currentFilter === 'absence') {
-    rows.push(['日期', '時間', '年段', '年級', '班級', '缺考座號']);
-    sorted.forEach(function(r) {
-      var match = r.className.match(/(.+部)(.+?)年(.+)班/);
-      var s = match ? match[1] : ''; var g = match ? match[2] : ''; var c = match ? match[3] : '';
-      var status = (r.seats.length === 0 ? '無人缺考' : r.seats.join('、'));
-      rows.push([formatDateDisplay(r.date), r.time || '', s, g, c, status]);
+      rows.push([formatDateDisplay(r.date), s, g, c, r.listenStatus === 'normal' ? '正常' : '異常']);
     });
   } else {
-    rows.push(['日期', '時間', '任務類型', '年段', '年級', '班級', '詳細狀況']);
+    rows.push(['日期', '年段', '年級', '班級', '缺考座號']);
     sorted.forEach(function(r) {
       var match = r.className.match(/(.+部)(.+?)年(.+)班/);
       var s = match ? match[1] : ''; var g = match ? match[2] : ''; var c = match ? match[3] : '';
-      var type = (r.taskType === 'listen' ? '英聽' : '缺考');
-      var status = '';
-      if (r.taskType === 'listen') { status = (r.listenStatus === 'normal' ? '設備正常' : '設備異常' + (r.listenNote ? ' (' + r.listenNote + ')' : '')); }
-      else { status = (r.seats.length === 0 ? '全班到齊' : '缺考座號：' + r.seats.join('、')); }
-      rows.push([formatDateDisplay(r.date), r.time || '', type, s, g, c, status]);
+      rows.push([formatDateDisplay(r.date), s, g, c, r.seats.length === 0 ? '無人缺考' : r.seats.join('、')]);
     });
   }
 
-  // 匯出為 .xls（HTML table 格式），所有欄位置中
   var header = rows.shift();
   var html = '<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"><style>td,th{text-align:center;vertical-align:middle;padding:6px 12px;border:1px solid #ccc;font-size:13px}th{background:#4472C4;color:#fff;font-weight:bold}tr:nth-child(even) td{background:#f2f2f2}</style></head><body><table>';
   html += '<tr>' + header.map(function(h){return '<th>'+escapeHtml(String(h))+'</th>'}).join('') + '</tr>';
@@ -850,7 +836,7 @@ function exportReport() {
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a'); a.href = url;
   var dateStr = new Date().toISOString().split('T')[0];
-  var filterName = currentFilter === 'all' ? '全部' : (currentFilter === 'listen' ? '英聽' : '缺考');
+  var filterName = currentFilter === 'listen' ? '英聽' : '缺考';
   a.download = '登錄報表_' + filterName + '_' + dateStr + '.xls';
   document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
   showToast('✅ 報表已匯出');
