@@ -334,10 +334,10 @@ var isAdmin = false;
 // ==========================================
 
 // API 網址密文（用一般使用者密碼加密）
-var ENCRYPTED_DATA = '50AWvzf5c91F5G2VnnTn99FrJyo/43q+NkE/8nxNsnLdqgiYD88JqufCP++ShLpa4EKQX4uyr8RLAny1ZwXaHkIDdztv0hmXQcx4FTUGHTziaAqFK7BKrlwZYq1UjVI1AQ+F1oXJABJPNNSDPcEB27hQFzYW+Wkg/YseDZ9R5x1rtQBilNcIzEn2g0bgnunoS+9aiS7ZdcO0mZV8';
+var ENCRYPTED_DATA = 'hPVOlxoKEY2d9isnH+tzr9XZHdY3yyEzepdYLOGdEpquZeShzag/43cHS5RYe8+03hUHHDkN3FBHvyHDmutchQHBjw6i6n8qH/k2IX+169gXrZ/rXq7MI8rrbGZHjQZF9Zj9SwXkk+8fQs92R2f5D3e64d60gj6x6/tnW6d8uJZQBYrk6C21OggYsVZrLKztiCawmY5GKMxfoUUk';
 
 // 管理員驗證密文（用管理員密碼加密，內含一般密碼）
-var ENCRYPTED_ADMIN = '5uRNkWJGxhOWA6gilU9ZAm4WYFyUZqZ1Reu9U9+3OZSOzAK/FYqFUAaFVlBM6IM3aXFDkmxZ8I0Pg/96oCH1';
+var ENCRYPTED_ADMIN = 'ARjnu4M8UBaGPF325/6dv3XfTJ1r4qxnIJToZaV0dkzGOkSQlkXRQNjlOesk51UWd3561CuDFOLvbrkcZoov';
 
 function b64ToUint8(b64) {
   var bin = atob(b64);
@@ -573,6 +573,20 @@ function closeSentOverlay() {
   document.getElementById('sent-overlay').classList.remove('show');
 }
 
+function resetForm() {
+  currentTask = '';
+  document.getElementById('task-listen').className = 'task-card';
+  document.getElementById('task-absence').className = 'task-card';
+  document.getElementById('class-card').style.display = 'none';
+  document.getElementById('listen-section').style.display = 'none';
+  document.getElementById('absence-section').style.display = 'none';
+  document.getElementById('sel-school').value = '';
+  document.getElementById('sel-grade').value = '';
+  document.getElementById('sel-class').innerHTML = '<option value="">請先選擇年段</option>';
+  resetListenUI();
+  clearSeats();
+}
+
 function doSubmit() {
   if (!pendingRecord) return;
   var rec = pendingRecord;
@@ -584,8 +598,7 @@ function doSubmit() {
     setSyncState('entry','ok','已同步到試算表');
     document.getElementById('sent-detail').textContent = rec.className + '\n資料已同步至雲端試算表';
     document.getElementById('sent-overlay').classList.add('show');
-    if(currentTask==='absence')clearSeats();
-    if(currentTask==='listen'){listenStatus='';resetListenUI()}
+    resetForm();
     if(isAdmin){return loadRecords()}
     return Promise.resolve();
   }).catch(function(e){
@@ -615,7 +628,7 @@ function submitRecord(){
     listenStatus:currentTask==='listen'?listenStatus:'',
     listenNote:currentTask==='listen'?document.getElementById('listen-note').value.trim():'',
     date:(now.getMonth()+1)+'/'+now.getDate(),
-    time:String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0')
+    time:String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0')+':'+String(now.getSeconds()).padStart(2,'0')
   };
   showConfirmOverlay(rec);
 }
