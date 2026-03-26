@@ -334,10 +334,10 @@ var isAdmin = false;
 // ==========================================
 
 // API 網址密文（用一般使用者密碼加密）
-var ENCRYPTED_DATA = 'ZeCmGSyQAYZDVSkLA7nV4mVCgO82EzP7wm3gbRLhnQNhnsp1sCVkVhLdoireNTAE6W8SMLq4bj2mFB4Fnqevygu1kzT1dJEg0afF3J+NjvAj6/ziGO9SCYAkGh1XL8INH3/Tmj+5huK0XP5UpoayTQBWm7xUr6TuYYVXCOlQ9GY3WrrWDcSN/+GkG6gkajXWBkjtABu5NwIza7jG';
+var ENCRYPTED_DATA = 'drVjOcJXFborCgZAQcLooWYEFQCshR5MC2RVmswUxhuqcpvPSnJz0Kb9MphsDXzUjanWx/CsdIhm2HDGt8vflw3CZJSwh1KeF3zn9BUJnzKSx9aMO4WzxTcwFR468lXlC4JOQMhdzlYki9fGQmxTQWZyB5+pODhQ4LCT66dgajj6kiZUvsLpmNjvE7c69+DHQZJCgcrVKTNvF/Dj';
 
 // 管理員驗證密文（用管理員密碼加密，內含一般密碼）
-var ENCRYPTED_ADMIN = '/cN5eoH5LQVOvb7Gmu7Hn+7LPB8I0TYOV6NBEbGD+tAz1ATGxzerIdhXiniTT7ihgYsCi623Am607HS3TDqt';
+var ENCRYPTED_ADMIN = 'vuNZRgD1LpK/tEmoyObR3nTMBJRkniY13Zken/zG/gMlyl8r49HR6R8QluIRxfQ19dMubpS7L1Owr676E2r9';
 
 function b64ToUint8(b64) {
   var bin = atob(b64);
@@ -760,53 +760,98 @@ function copyAll(){
   copyText(lines.join('\n'))
 }
 
+function sortRecordsForExport(list) {
+  var schoolOrder = {'國中部': 0, '高中部': 1};
+  var gradeOrder = {'一': 0, '二': 1, '三': 2};
+  var hsClassOrder = {'甲':0,'乙':1,'丙':2,'丁':3,'戊':4,'己':5,'庚':6};
+
+  return list.slice().sort(function(a, b) {
+    var ma = a.className.match(/(.+部)(.+?)年(.+)班/) || [];
+    var mb = b.className.match(/(.+部)(.+?)年(.+)班/) || [];
+    var sa = ma[1] || '', ga = ma[2] || '', ca = ma[3] || '';
+    var sb = mb[1] || '', gb = mb[2] || '', cb = mb[3] || '';
+
+    // 1. 日期排序（M/D 格式，比較月再比較日）
+    var da = (a.date || '').split('/').map(Number);
+    var db = (b.date || '').split('/').map(Number);
+    var dateCmp = (da[0] || 0) - (db[0] || 0);
+    if (dateCmp === 0) dateCmp = (da[1] || 0) - (db[1] || 0);
+    if (dateCmp !== 0) return dateCmp;
+
+    // 2. 年段：國中部優先
+    var sCmp = (schoolOrder[sa] || 0) - (schoolOrder[sb] || 0);
+    if (sCmp !== 0) return sCmp;
+
+    // 3. 年級：一、二、三
+    var gCmp = (gradeOrder[ga] || 0) - (gradeOrder[gb] || 0);
+    if (gCmp !== 0) return gCmp;
+
+    // 4. 班級：國中部 1~10，高中部 甲乙丙丁戊己庚
+    var caNum, cbNum;
+    if (sa === '高中部') {
+      caNum = hsClassOrder[ca] !== undefined ? hsClassOrder[ca] : 99;
+      cbNum = hsClassOrder[cb] !== undefined ? hsClassOrder[cb] : 99;
+    } else {
+      caNum = parseInt(ca) || 99;
+      cbNum = parseInt(cb) || 99;
+    }
+    return caNum - cbNum;
+  });
+}
+
 function exportReport() {
   if (!isAdmin) { showToast('權限不足'); return; }
   var list = getFilteredRecords();
   if (!list.length) { showToast('沒有紀錄可匯出'); return; }
 
+  var sorted = sortRecordsForExport(list);
   var csvContent = "\uFEFF";
   var rows = [];
 
   if (currentFilter === 'listen') {
-    rows.push(['日期', '年段', '年級', '班級', '設備狀況']);
-    list.forEach(function(r) {
+    rows.push(['日期', '時間', '年段', '年級', '班級', '設備狀況']);
+    sorted.forEach(function(r) {
       var match = r.className.match(/(.+部)(.+?)年(.+)班/);
       var s = match ? match[1] : ''; var g = match ? match[2] : ''; var c = match ? match[3] : '';
       var status = (r.listenStatus === 'normal' ? '正常' : '異常');
-      rows.push([formatDateDisplay(r.date), s, g, c, status]);
+      rows.push([formatDateDisplay(r.date), r.time || '', s, g, c, status]);
     });
   } else if (currentFilter === 'absence') {
-    rows.push(['日期', '年段', '年級', '班級', '缺考座號']);
-    list.forEach(function(r) {
+    rows.push(['日期', '時間', '年段', '年級', '班級', '缺考座號']);
+    sorted.forEach(function(r) {
       var match = r.className.match(/(.+部)(.+?)年(.+)班/);
       var s = match ? match[1] : ''; var g = match ? match[2] : ''; var c = match ? match[3] : '';
       var status = (r.seats.length === 0 ? '無人缺考' : r.seats.join('、'));
-      rows.push([formatDateDisplay(r.date), s, g, c, status]);
+      rows.push([formatDateDisplay(r.date), r.time || '', s, g, c, status]);
     });
   } else {
-    rows.push(['日期', '任務類型', '年段', '年級', '班級', '詳細狀況']);
-    list.forEach(function(r) {
+    rows.push(['日期', '時間', '任務類型', '年段', '年級', '班級', '詳細狀況']);
+    sorted.forEach(function(r) {
       var match = r.className.match(/(.+部)(.+?)年(.+)班/);
       var s = match ? match[1] : ''; var g = match ? match[2] : ''; var c = match ? match[3] : '';
       var type = (r.taskType === 'listen' ? '英聽' : '缺考');
       var status = '';
       if (r.taskType === 'listen') { status = (r.listenStatus === 'normal' ? '設備正常' : '設備異常' + (r.listenNote ? ' (' + r.listenNote + ')' : '')); }
       else { status = (r.seats.length === 0 ? '全班到齊' : '缺考座號：' + r.seats.join('、')); }
-      rows.push([formatDateDisplay(r.date), type, s, g, c, status]);
+      rows.push([formatDateDisplay(r.date), r.time || '', type, s, g, c, status]);
     });
   }
 
-  var csvString = csvContent + rows.map(function(row) {
-    return row.map(function(cell) { return '"' + String(cell).replace(/"/g, '""') + '"'; }).join(',');
-  }).join('\n');
+  // 匯出為 .xls（HTML table 格式），所有欄位置中
+  var header = rows.shift();
+  var html = '<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"><style>td,th{text-align:center;vertical-align:middle;padding:6px 12px;border:1px solid #ccc;font-size:13px}th{background:#4472C4;color:#fff;font-weight:bold}tr:nth-child(even) td{background:#f2f2f2}</style></head><body><table>';
+  html += '<tr>' + header.map(function(h){return '<th>'+escapeHtml(String(h))+'</th>'}).join('') + '</tr>';
+  rows.forEach(function(row) {
+    html += '<tr>' + row.map(function(cell){return '<td>'+escapeHtml(String(cell))+'</td>'}).join('') + '</tr>';
+  });
+  html += '</table></body></html>';
 
-  var blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+  var blob = new Blob(['\uFEFF' + html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a'); a.href = url;
   var dateStr = new Date().toISOString().split('T')[0];
   var filterName = currentFilter === 'all' ? '全部' : (currentFilter === 'listen' ? '英聽' : '缺考');
-  a.download = '登錄報表_' + filterName + '_' + dateStr + '.csv';
+  a.download = '登錄報表_' + filterName + '_' + dateStr + '.xls';
   document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
   showToast('✅ 報表已匯出');
 }
