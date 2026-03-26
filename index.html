@@ -123,7 +123,7 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
 .record-item { background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:13px; margin-bottom:9px; }
 .rec-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:7px; }
 .rec-class { font-size:15px; font-weight:900; letter-spacing:1px; }
-.rec-time { font-family:'Space Mono',monospace; font-size:11px; color:var(--text-muted); }
+.rec-time { font-family:'Space Mono',monospace; font-size:12px; color:var(--text); background:var(--surface); padding:3px 8px; border-radius:5px; border:1px solid var(--border); white-space:nowrap; }
 .rec-tag { display:inline-flex; font-size:10px; font-weight:700; padding:2px 7px; border-radius:5px; margin-right:6px; vertical-align:middle; }
 .rec-tag.tl { background:var(--orange-dim); color:var(--orange); border:1px solid rgba(232,145,45,.4); }
 .rec-tag.ta { background:var(--red-dim);    color:var(--red);    border:1px solid rgba(248,81,73,.4); }
@@ -296,12 +296,24 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
   </div>
 </div>
 
-<div class="success-overlay" id="success-overlay">
+<div class="success-overlay" id="confirm-overlay">
+  <div class="success-box">
+    <div class="success-icon" style="font-size:40px">📋</div>
+    <div class="success-title" style="color:var(--blue)">請確認送出內容</div>
+    <div class="success-detail" id="confirm-detail" style="white-space:pre-line"></div>
+    <div style="display:flex;gap:10px">
+      <button class="success-btn" style="flex:1;background:var(--surface2);color:var(--text-muted);border:1px solid var(--border)" onclick="closeConfirmOverlay()">取消</button>
+      <button class="success-btn" style="flex:1" onclick="doSubmit()">確認送出</button>
+    </div>
+  </div>
+</div>
+
+<div class="success-overlay" id="sent-overlay">
   <div class="success-box">
     <div class="success-icon">✅</div>
-    <div class="success-title">登錄成功！</div>
-    <div class="success-detail" id="success-detail"></div>
-    <button class="success-btn" onclick="closeSuccessOverlay()">確認</button>
+    <div class="success-title">資料已送出</div>
+    <div class="success-detail" id="sent-detail" style="white-space:pre-line"></div>
+    <button class="success-btn" onclick="closeSentOverlay()">確認</button>
   </div>
 </div>
 
@@ -322,10 +334,10 @@ var isAdmin = false;
 // ==========================================
 
 // API 網址密文（用一般使用者密碼加密）
-var ENCRYPTED_DATA = 'cMXFwHJok9l2sEsoiB54YXMw+y2aC9TlXWTd5idZnCj9lVPlkL1Nms6eD0aBPNoDsvlN1Bqfg0eSwMo2N6OrH8pRZxmToraCTmE1uffcAoiuGkl8ymtHKZR+oCyO9k/Diw8Bqcr2f8rRGFSwkP/UelPvuRSZU845VbguIvJo1HBKgYMmBibzGT462pWZqzs8F9bVnZqyALyORx9y';
+var ENCRYPTED_DATA = '50AWvzf5c91F5G2VnnTn99FrJyo/43q+NkE/8nxNsnLdqgiYD88JqufCP++ShLpa4EKQX4uyr8RLAny1ZwXaHkIDdztv0hmXQcx4FTUGHTziaAqFK7BKrlwZYq1UjVI1AQ+F1oXJABJPNNSDPcEB27hQFzYW+Wkg/YseDZ9R5x1rtQBilNcIzEn2g0bgnunoS+9aiS7ZdcO0mZV8';
 
 // 管理員驗證密文（用管理員密碼加密，內含一般密碼）
-var ENCRYPTED_ADMIN = 'PkMo+vT4kZ/Cl+rRtF01Sv3fQgrMagAVHE4zo7lkDLuPomUDzbTPhmwGgFWK3k16q5dRSk88Kkpiq33c3g2y';
+var ENCRYPTED_ADMIN = '5uRNkWJGxhOWA6gilU9ZAm4WYFyUZqZ1Reu9U9+3OZSOzAK/FYqFUAaFVlBM6IM3aXFDkmxZ8I0Pg/96oCH1';
 
 function b64ToUint8(b64) {
   var bin = atob(b64);
@@ -525,22 +537,88 @@ function renderSummary(){var sorted=Array.from(currentSeats).sort(function(a,b){
 function removeSeat(n){currentSeats.delete(n);syncPickerUI();renderSummary()}
 function clearSeats(){currentSeats.clear();allPresent=false;document.getElementById('all-present-notice').style.display='none';document.getElementById('present-btn').classList.remove('active');document.querySelectorAll('.seat-btn').forEach(function(b){if(parseInt(b.dataset.seat)>MAX_SEAT)b.remove()});syncPickerUI();renderSummary();showToast('已清除所有座號')}
 
-function showSuccessOverlay(className, taskType) {
-  var detail = '';
-  if (taskType === 'listen') {
-    detail = className + ' 英聽設備狀態已回報';
+var pendingRecord = null;
+
+function buildConfirmMessage(rec) {
+  var lines = [];
+  lines.push('班級：' + rec.className);
+  if (rec.taskType === 'listen') {
+    if (rec.listenStatus === 'normal') {
+      lines.push('設備狀態：正常');
+    } else {
+      lines.push('設備狀態：異常');
+      if (rec.listenNote) lines.push('異常說明：' + rec.listenNote);
+    }
   } else {
-    detail = className + ' 缺考登錄已送出';
+    if (rec.allPresent || rec.seats.length === 0) {
+      lines.push('缺考狀況：全班到齊，無人缺考');
+    } else {
+      lines.push('缺考座號：' + rec.seats.map(function(s){return String(s).padStart(2,'0')}).join('、'));
+      lines.push('缺考人數：' + rec.seats.length + ' 人');
+    }
   }
-  document.getElementById('success-detail').textContent = detail + '\n資料已同步至雲端試算表';
-  var el = document.getElementById('success-overlay');
-  el.classList.add('show');
-}
-function closeSuccessOverlay() {
-  document.getElementById('success-overlay').classList.remove('show');
+  return lines.join('\n');
 }
 
-function submitRecord(){var school=document.getElementById('sel-school').value;var g=document.getElementById('sel-grade').value;var c=document.getElementById('sel-class').value;if(!currentTask){showToast('⚠️ 請先選擇任務');return}if(!school||!g||!c){showToast('⚠️ 請選擇年段、年級和班級');return}if(currentTask==='listen'){if(!listenStatus){showToast('⚠️ 請選擇正常或異常');return}if(listenStatus==='abnormal'&&!document.getElementById('listen-note').value.trim()){showToast('⚠️ 請填寫異常說明');return}}if(currentTask==='absence'&&!allPresent&&currentSeats.size===0){showToast('⚠️ 請選擇座號，或點「全班到齊」');return}var now=new Date();var rec={id:Date.now(),taskType:currentTask,className:school+g+'年'+c+'班',seats:currentTask==='absence'?Array.from(currentSeats).sort(function(a,b){return a-b}):[],allPresent:currentTask==='absence'?allPresent:false,listenStatus:currentTask==='listen'?listenStatus:'',listenNote:currentTask==='listen'?document.getElementById('listen-note').value.trim():'',date:(now.getMonth()+1)+'/'+now.getDate(),time:String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0')};setSyncState('entry','loading','儲存中...');apiPost({action:'add',record:rec}).then(function(data){if(data.error==='unauthorized')throw new Error('unauthorized');if(!data.ok)throw new Error('not ok');setSyncState('entry','ok','已同步到試算表');showSuccessOverlay(rec.className, rec.taskType);if(currentTask==='absence')clearSeats();if(currentTask==='listen'){listenStatus='';resetListenUI()}if(isAdmin){return loadRecords()}return Promise.resolve();}).catch(function(e){if(e.message==='unauthorized'){setSyncState('entry','error','金鑰驗證失敗');showToast('❌ 金鑰錯誤')}else{setSyncState('entry','error','儲存失敗');showToast('❌ 儲存失敗，請確認連線')}})}
+function showConfirmOverlay(rec) {
+  pendingRecord = rec;
+  document.getElementById('confirm-detail').textContent = buildConfirmMessage(rec);
+  document.getElementById('confirm-overlay').classList.add('show');
+}
+function closeConfirmOverlay() {
+  document.getElementById('confirm-overlay').classList.remove('show');
+  pendingRecord = null;
+}
+function closeSentOverlay() {
+  document.getElementById('sent-overlay').classList.remove('show');
+}
+
+function doSubmit() {
+  if (!pendingRecord) return;
+  var rec = pendingRecord;
+  closeConfirmOverlay();
+  setSyncState('entry','loading','儲存中...');
+  apiPost({action:'add',record:rec}).then(function(data){
+    if(data.error==='unauthorized')throw new Error('unauthorized');
+    if(!data.ok)throw new Error('not ok');
+    setSyncState('entry','ok','已同步到試算表');
+    document.getElementById('sent-detail').textContent = rec.className + '\n資料已同步至雲端試算表';
+    document.getElementById('sent-overlay').classList.add('show');
+    if(currentTask==='absence')clearSeats();
+    if(currentTask==='listen'){listenStatus='';resetListenUI()}
+    if(isAdmin){return loadRecords()}
+    return Promise.resolve();
+  }).catch(function(e){
+    if(e.message==='unauthorized'){setSyncState('entry','error','金鑰驗證失敗');showToast('❌ 金鑰錯誤')}
+    else{setSyncState('entry','error','儲存失敗');showToast('❌ 儲存失敗，請確認連線')}
+  });
+}
+
+function submitRecord(){
+  var school=document.getElementById('sel-school').value;
+  var g=document.getElementById('sel-grade').value;
+  var c=document.getElementById('sel-class').value;
+  if(!currentTask){showToast('⚠️ 請先選擇任務');return}
+  if(!school||!g||!c){showToast('⚠️ 請選擇年段、年級和班級');return}
+  if(currentTask==='listen'){
+    if(!listenStatus){showToast('⚠️ 請選擇正常或異常');return}
+    if(listenStatus==='abnormal'&&!document.getElementById('listen-note').value.trim()){showToast('⚠️ 請填寫異常說明');return}
+  }
+  if(currentTask==='absence'&&!allPresent&&currentSeats.size===0){showToast('⚠️ 請選擇座號，或點「全班到齊」');return}
+  var now=new Date();
+  var rec={
+    id:Date.now(),
+    taskType:currentTask,
+    className:school+g+'年'+c+'班',
+    seats:currentTask==='absence'?Array.from(currentSeats).sort(function(a,b){return a-b}):[],
+    allPresent:currentTask==='absence'?allPresent:false,
+    listenStatus:currentTask==='listen'?listenStatus:'',
+    listenNote:currentTask==='listen'?document.getElementById('listen-note').value.trim():'',
+    date:(now.getMonth()+1)+'/'+now.getDate(),
+    time:String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0')
+  };
+  showConfirmOverlay(rec);
+}
 
 var records=[], currentFilter='all', filterDate='all', filterSchool='all', filterGrade='all';
 
@@ -633,7 +711,8 @@ function renderRecords(){
       body='<div class="rec-seats">'+(r.seats.length===0?'<span style="color:var(--green);font-size:13px;font-weight:700">✓ 全班到齊</span>':r.seats.map(function(s){return '<span class="mini-chip">'+String(s).padStart(2,'0')+'</span>'}).join(''))+'</div>'
     }
     var count=isL?(r.listenStatus==='normal'?'設備正常':'設備異常'):(r.seats.length===0?'無人缺考':'缺考 '+r.seats.length+' 人');
-    return '<div class="record-item"><div class="rec-header"><span class="rec-class">'+tag+escapeHtml(r.className)+'</span><span class="rec-time">'+escapeHtml(formatDateDisplay(r.date)+' '+r.time)+'</span></div><div class="rec-body">'+body+'</div><div class="rec-footer"><span class="rec-count">'+count+'</span><div class="rec-btns"><button class="rec-btn copy" onclick="copyRecord('+r.id+')">複製</button><button class="rec-btn del" onclick="deleteRecord('+r.id+')">刪除</button></div></div></div>'
+    var timeDisplay = escapeHtml(formatDateDisplay(r.date)) + ' ' + escapeHtml(r.time || '');
+    return '<div class="record-item"><div class="rec-header"><span class="rec-class">'+tag+escapeHtml(r.className)+'</span><span class="rec-time">'+timeDisplay+'</span></div><div class="rec-body">'+body+'</div><div class="rec-footer"><span class="rec-count">'+count+'</span><div class="rec-btns"><button class="rec-btn copy" onclick="copyRecord('+r.id+')">複製</button><button class="rec-btn del" onclick="deleteRecord('+r.id+')">刪除</button></div></div></div>'
   }).join('')
 }
 
