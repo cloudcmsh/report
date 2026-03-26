@@ -334,10 +334,10 @@ var isAdmin = false;
 // ==========================================
 
 // API 網址密文（用一般使用者密碼加密）
-var ENCRYPTED_DATA = 'hPVOlxoKEY2d9isnH+tzr9XZHdY3yyEzepdYLOGdEpquZeShzag/43cHS5RYe8+03hUHHDkN3FBHvyHDmutchQHBjw6i6n8qH/k2IX+169gXrZ/rXq7MI8rrbGZHjQZF9Zj9SwXkk+8fQs92R2f5D3e64d60gj6x6/tnW6d8uJZQBYrk6C21OggYsVZrLKztiCawmY5GKMxfoUUk';
+var ENCRYPTED_DATA = 'ZeCmGSyQAYZDVSkLA7nV4mVCgO82EzP7wm3gbRLhnQNhnsp1sCVkVhLdoireNTAE6W8SMLq4bj2mFB4Fnqevygu1kzT1dJEg0afF3J+NjvAj6/ziGO9SCYAkGh1XL8INH3/Tmj+5huK0XP5UpoayTQBWm7xUr6TuYYVXCOlQ9GY3WrrWDcSN/+GkG6gkajXWBkjtABu5NwIza7jG';
 
 // 管理員驗證密文（用管理員密碼加密，內含一般密碼）
-var ENCRYPTED_ADMIN = 'ARjnu4M8UBaGPF325/6dv3XfTJ1r4qxnIJToZaV0dkzGOkSQlkXRQNjlOesk51UWd3561CuDFOLvbrkcZoov';
+var ENCRYPTED_ADMIN = '/cN5eoH5LQVOvb7Gmu7Hn+7LPB8I0TYOV6NBEbGD+tAz1ATGxzerIdhXiniTT7ihgYsCi623Am607HS3TDqt';
 
 function b64ToUint8(b64) {
   var bin = atob(b64);
@@ -628,7 +628,7 @@ function submitRecord(){
     listenStatus:currentTask==='listen'?listenStatus:'',
     listenNote:currentTask==='listen'?document.getElementById('listen-note').value.trim():'',
     date:(now.getMonth()+1)+'/'+now.getDate(),
-    time:String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0')+':'+String(now.getSeconds()).padStart(2,'0')
+    time:String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0')
   };
   showConfirmOverlay(rec);
 }
