@@ -334,10 +334,10 @@ var isAdmin = false;
 // ==========================================
 
 // API 網址密文（用一般使用者密碼加密）
-var ENCRYPTED_DATA = 'NiUBfksevmQKHqsMtcEGoLC4WoSgifmlz/M51JVWta0YdVV1OXRhWXHbU+bzfvq2xzxIH4NiMjdH91JUNzAXl0ZR2T4HF7VcCxWMYI0l9ENGzKRYDNkdFP2F9xkdEzB7lR++uo5A6WfBPW0H089NB5f+puzQ4AXwtFfHAKUfz3DsawE3dXht2DlrxZ9DlJgzis7Ajh/cIfN4LjyQ';
+var ENCRYPTED_DATA = 'JJO63N7yZO1Xlot3wggeF3NzAJ2BTmHy/NMc6BbZFRKYhOuO/EaqR/cM3bO+3RopiL9+jzYGTaUf8YaRl70OIoI2gpxF5HF3L+4oOOdyLRUj/1t60J5f4MhA0zExhN8TIHW2IhyTo1wVv7vVo5Mn+ENF+1RbexZ7YCma5NolKi7L1ervmTIB01Kp1W1KVBIvH4NxLKEnfdmMjaLM';
 
 // 管理員驗證密文（用管理員密碼加密，內含一般密碼）
-var ENCRYPTED_ADMIN = 'hfebkX1MOrrKykiAh3Kpr8CrM2uYg8Yx3ZEsG+Yebf/a9YzjcIVzdMkqXxF/EQCvz07qIH/0we/wvghdnm44';
+var ENCRYPTED_ADMIN = '5QEBCCrpJmWcNX6eqdRnIPpNE48O0D05zjleMMKMlB9IVDHP0U8AAfaSa6wpnfjLGFACl/nl+nuqd5r7ecDG';
 
 function b64ToUint8(b64) {
   var bin = atob(b64);
@@ -795,7 +795,12 @@ function sortRecordsForExport(list) {
       caNum = parseInt(ca) || 99;
       cbNum = parseInt(cb) || 99;
     }
-    return caNum - cbNum;
+    if (caNum !== cbNum) return caNum - cbNum;
+
+    // 5. 同班級按時間先到後排序
+    var ta = a.time || '00:00';
+    var tb = b.time || '00:00';
+    return ta < tb ? -1 : (ta > tb ? 1 : 0);
   });
 }
 
@@ -809,18 +814,18 @@ function exportReport() {
   var rows = [];
 
   if (currentFilter === 'listen') {
-    rows.push(['日期', '年段', '年級', '班級', '設備狀況']);
+    rows.push(['日期', '年段', '年級', '班級', '設備狀況', '時間']);
     sorted.forEach(function(r) {
       var match = r.className.match(/(.+部)(.+?)年(.+)班/);
       var s = match ? match[1] : ''; var g = match ? match[2] : ''; var c = match ? match[3] : '';
-      rows.push([formatDateDisplay(r.date), s, g, c, r.listenStatus === 'normal' ? '正常' : '異常']);
+      rows.push([formatDateDisplay(r.date), s, g, c, r.listenStatus === 'normal' ? '正常' : '異常', r.time || '']);
     });
   } else {
-    rows.push(['日期', '年段', '年級', '班級', '缺考座號']);
+    rows.push(['日期', '年段', '年級', '班級', '缺考座號', '時間']);
     sorted.forEach(function(r) {
       var match = r.className.match(/(.+部)(.+?)年(.+)班/);
       var s = match ? match[1] : ''; var g = match ? match[2] : ''; var c = match ? match[3] : '';
-      rows.push([formatDateDisplay(r.date), s, g, c, r.seats.length === 0 ? '無人缺考' : r.seats.join('、')]);
+      rows.push([formatDateDisplay(r.date), s, g, c, r.seats.length === 0 ? '無人缺考' : r.seats.join('、'), r.time || '']);
     });
   }
 
