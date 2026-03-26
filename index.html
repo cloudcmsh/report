@@ -183,13 +183,13 @@ textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
     <div class="setup-desc">請輸入管理處提供的存取密碼。</div>
     <div class="setup-error" id="setup-error"></div>
     
-    <div class="setup-field">
+    <div class="setup-field" id="user-pwd-field">
       <label>班級存取密碼</label>
       <input type="password" id="setup-token" placeholder="請輸入存取密碼" autocomplete="off">
     </div>
 
     <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
-      <input type="checkbox" id="chk-admin" onchange="document.getElementById('admin-pwd-field').style.display = this.checked ? 'block' : 'none'" style="width: 16px; height: 16px; accent-color: var(--blue);">
+      <input type="checkbox" id="chk-admin" onchange="toggleAdminMode()" style="width: 16px; height: 16px; accent-color: var(--blue);">
       <label for="chk-admin" style="font-size: 13px; color: var(--text-muted); cursor: pointer; user-select: none;">以管理員身分登入 (查看與匯出紀錄)</label>
     </div>
 
@@ -298,13 +298,16 @@ var ni = new Date();
 document.getElementById('date-display').textContent = ni.getFullYear()+'.'+(ni.getMonth()+1)+'.'+ni.getDate()+' ('+WD[ni.getDay()]+')';
 
 // ==========================================
-// 🔐 安全設定區塊
+// 🔐 安全設定區塊（全部加密，原始碼中無任何密碼）
 // ==========================================
-var ADMIN_PIN = '8888'; // ★ 在這裡設定你的「管理員專屬密碼」
-var isAdmin = false;    // 判斷當前使用者是否為管理員
+var isAdmin = false;
 // ==========================================
 
-var ENCRYPTED_DATA = 'JGHKepWRaBZbX1hGXhEhzj4wW1ixzBAcCaEZIHlM9NicfJaI+rEI72Mn238oSJ+aaVXHvA9BXbyyHMFisWhlOWZPpKJOe4MLq/R9VOk1XU0GN6+908wtIWtQtlO0Kq1DcAyg+LLD/BnpEondKsx+T9FEG/msyJsl/XK+iMoprtJxacD4IhWCN15mifKAD1ogy4eVvyC9fYdk9Coj';
+// API 網址密文（用一般使用者密碼加密）
+var ENCRYPTED_DATA = 'p8eCZHtZrGUq+QjuGo5sPvGL+65xLb21NCCToVGljd08mkmiAzqdpCaWP1h/JGB6h6jQqahCxUrG8QUo2/Y/NYKOjRokf7zKmTPxKQKcCTMJ8ZrszOy42FvOuliyftjlYt5c2lyrk2agR9cUKxGSmtVujOvTH4Q6oVuXEy39o+Da25bkWmZstAEbReJp5xvt33ZJIhT3TrhXZBLv';
+
+// 管理員驗證密文（用管理員密碼加密，內含一般密碼）
+var ENCRYPTED_ADMIN = 'YLyrX9UlYA1vVxD4X4vAJgg6/yXVBMHuyWhQTJkA3RTmkq8Q/VnOLZsGuDGEx+KqkDudxbqxqEjDXA7rG7vr';
 
 function b64ToUint8(b64) {
   var bin = atob(b64);
@@ -313,8 +316,8 @@ function b64ToUint8(b64) {
   return arr;
 }
 
-async function decryptURL(password) {
-  var raw = b64ToUint8(ENCRYPTED_DATA);
+async function decryptData(encryptedB64, password) {
+  var raw = b64ToUint8(encryptedB64);
   var salt = raw.slice(0, 16);
   var iv   = raw.slice(16, 28);
   var tag  = raw.slice(28, 44);
@@ -364,35 +367,48 @@ async function unlockApp() {
   var isAdmCheck = document.getElementById('chk-admin').checked;
   var admPwd = document.getElementById('setup-admin-token').value.trim();
 
-  if (!password || password.length < 4) {
-    showSetupError('⚠️ 請輸入至少 4 個字元的存取密碼');
-    return;
-  }
-
-  // 若勾選管理員，先驗證密碼是否正確
-  if (isAdmCheck && admPwd !== ADMIN_PIN) {
-    showSetupError('❌ 管理員專屬密碼錯誤');
+  if (!password && !isAdmCheck) {
+    showSetupError('⚠️ 請輸入存取密碼');
     return;
   }
 
   showSetupInfo('⏳ 系統連線驗證中...');
 
   try {
-    var url = await decryptURL(password);
+    var userPwd = password;
+
+    // 管理員模式：用管理員密碼解密取得一般密碼
+    if (isAdmCheck) {
+      if (!admPwd) { showSetupError('⚠️ 請輸入管理員密碼'); return; }
+      try {
+        var adminResult = await decryptData(ENCRYPTED_ADMIN, admPwd);
+        if (!adminResult.startsWith('ADMIN_VERIFIED:')) throw new Error('bad');
+        // 從解密結果取出一般使用者密碼
+        userPwd = adminResult.substring('ADMIN_VERIFIED:'.length);
+      } catch(e) {
+        showSetupError('❌ 管理員密碼錯誤');
+        return;
+      }
+    }
+
+    if (!userPwd) { showSetupError('⚠️ 請輸入存取密碼'); return; }
+
+    // 用一般密碼解密 API URL
+    var url = await decryptData(ENCRYPTED_DATA, userPwd);
     if (!url.startsWith('https://')) throw new Error('bad');
     API_URL = url;
-    API_TOKEN = password;
+    API_TOKEN = userPwd;
 
     var data = await apiGet({ action: 'getAll' });
     if (data.error === 'unauthorized') throw new Error('token');
 
-    saveToken(password, isAdmCheck ? 'admin' : 'user');
+    saveToken(userPwd, isAdmCheck ? 'admin' : 'user');
     enterApp();
   } catch(e) {
     if (e.message === 'token') {
       showSetupError('❌ 存取密碼被伺服器拒絕');
     } else {
-      showSetupError('❌ 班級存取密碼錯誤');
+      showSetupError('❌ 密碼錯誤，無法解鎖');
     }
     API_URL = ''; API_TOKEN = ''; isAdmin = false;
   }
@@ -400,7 +416,7 @@ async function unlockApp() {
 
 async function tryAutoUnlock(token) {
   try {
-    var url = await decryptURL(token);
+    var url = await decryptData(ENCRYPTED_DATA, token);
     if (!url.startsWith('https://')) return false;
     API_URL = url;
     API_TOKEN = token;
@@ -433,6 +449,14 @@ function enterApp() {
   } else {
     document.getElementById('nav-records').style.display = 'none';
   }
+}
+
+function toggleAdminMode() {
+  var checked = document.getElementById('chk-admin').checked;
+  document.getElementById('admin-pwd-field').style.display = checked ? 'block' : 'none';
+  document.getElementById('user-pwd-field').style.display = checked ? 'none' : 'block';
+  if (checked) { document.getElementById('setup-token').value = ''; }
+  else { document.getElementById('setup-admin-token').value = ''; }
 }
 
 function showSetupError(msg) {
